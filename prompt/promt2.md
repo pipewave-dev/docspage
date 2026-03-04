@@ -1,0 +1,39 @@
+# Mong muốn:
+- Viết được document dạng markdown cho project pipewave.
+    - Backend module dùng để host websocket/long polling server, cho phép user có thể import như module và tự custom InpectFn và HandlerFn
+    - FeModule là module cho frontend, cung cấp Class để encode/decode đúng format binary từ backend trả về. Chỉ với config đơn giản User có sử dụng websocket một cách dễ dàng.
+- Quảng cáo tính năng:
+    - Message gửi theo cặp type(string)+data(binary), cho phép người dùng có thể xử lý multiplexing trên cùng 1 websocket. Có sẵn type dễ dàng xử lý dưới dạng event driven
+    - Quản lý theo user-base, không phải là connection-base. Module cung cấp các function để gửi đến Message đến User chứ không phải đến Connection có ID là ...
+    - Design cho scaling, dễ dàng deploy lên multi VM, k8s để có thể chịu tải lớn hơn. Pattern đã có sẵn cơ chế broadcast, không cần sticky session.
+    - Build với high performance, tối ưu hoá data sử dụng binary frame thay vì text. Backend golang xử lý đồng thời cao, ít tốn memory. Xử dụng kernel kqueue/netpoll để duy trì idle socket mà không tốn memory buffer
+    - Heartbeat tích hợp vào FeModule, không cần tự control
+    - support hook cho react, dễ dàng handle Status websocket, và handle khi có new message
+- Phát triển tương lai
+    - Support thêm các adapter cho nhiều database hơn
+    - Support adapter cho nhiều loại pubsub
+    - expose các API để tích hợp với ngôn ngữ khác ngoài golang
+    - thêm chỉ số metric
+# Bạn hãy giúp tôi:
+- đọc qua 2 project Backend và FeModule
+    - /Users/ngocntr/Documents/git.ponos-tech.com/pipewave/pipewave-backend
+        - interface cung cấp dạng module nằm ở core/delivery/module.go
+        - type để giao tiếp (data object) qua websocket hoặc long polling
+            - core/service/websocket/0.message_type.go
+            - note: long polling sẽ lấy message từ queue, nếu queue lớn hơn 1 message sẽ lấy 1 binary frame chứa nhiều message (mỗi message có type là binary) [<msg1>,<msg2>,...]. Binary frame này được encode bằng msgpack 
+        - example để tạo backend:
+            - init database dùng docker compose: ./docker-compose.yml
+            - example code và config: ./playground
+    - /Users/ngocntr/Documents/git.ponos-tech.com/pipewave/pipewave-femodule
+        - class chứa logic để tương tác với backend.
+            - src/external/pipewave/websocket-api.ts
+            - tự động fallback về long-polling
+            - tự động encode binary frame, user nhận về type+data như cách backend gửi
+            - có các eventHandler để trigger callback nếu người dùng cung cấp
+        - với react, dùng usePipewave src/hooks/usePipewave.ts sẽ dễ dàng tuỳ ý render mình muốn
+            - có websocket state nhận biết ngay khi thay đổi
+            - có handler callback để xử lý khi nhận message dựa vào msgType
+        - example tại: src/pages/Example.tsx
+            - khởi tạo: line 86~93
+            - xem cách dùng hook dễ dàng handle message từ backend
+- Trước hết xem xét tạo 1 PLAN.md để lên kế hoạch, để thực hiện tạo 1 project /Users/ngocntr/Documents/git.ponos-tech.com/pipewave/docpages viết bằng react typescript làm landing page để quảng bá sản phẩm này.
