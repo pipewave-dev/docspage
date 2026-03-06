@@ -71,100 +71,226 @@ export default function Hero() {
         </div>
 
         {/* Code preview — Frontend & Backend */}
-        <div className="mx-auto mt-16 grid max-w-5xl gap-4 lg:grid-cols-2">
-          {/* Frontend */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <div className="rounded-xl border border-slate-800/60 bg-slate-900/50 p-5 backdrop-blur-sm h-full">
-              <div className="flex items-center gap-4 text-xs text-slate-500">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-500/60" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500/60" />
-                  <div className="h-3 w-3 rounded-full bg-green-500/60" />
-                </div>
-                <span>useChat.ts</span>
-                <span className="ml-auto rounded-full bg-primary-500/15 px-2 py-0.5 text-[10px] font-medium text-primary-400">Frontend</span>
-              </div>
-              <div className="mt-4 font-mono text-[13px] leading-relaxed">
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">1</span>
-                  <span><span className="text-purple-400">const</span> <span className="text-primary-300">handlers</span> = <span className="text-yellow-300">useMemo</span>(() =&gt; ({'{'}
-                  </span>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">2</span>
-                  <span className="pl-4"><span className="text-primary-300">CHAT_MESSAGE</span>: <span className="text-yellow-300">handleChat</span>,</span>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">3</span>
-                  <span className="pl-4"><span className="text-primary-300">NOTIFICATION</span>: <span className="text-yellow-300">showToast</span>,</span>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">4</span>
-                  <span>{'}'}), [])</span>
-                </div>
-                <div className="h-2" />
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">5</span>
-                  <span><span className="text-purple-400">const</span> {'{'} <span className="text-primary-300">send</span>, <span className="text-primary-300">status</span> {'}'} = <span className="text-yellow-300">usePipewave</span>(handlers)</span>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-2 rounded-lg bg-green-500/10 px-3 py-2 text-xs text-green-400">
-                <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                WebSocket connected
-              </div>
-            </div>
-          </motion.div>
+        <div className="mx-auto mt-16 grid max-w-5xl gap-6 lg:grid-cols-2">
 
-          {/* Backend */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.65 }}
-          >
-            <div className="rounded-xl border border-slate-800/60 bg-slate-900/50 p-5 backdrop-blur-sm h-full">
-              <div className="flex items-center gap-4 text-xs text-slate-500">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-500/60" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500/60" />
-                  <div className="h-3 w-3 rounded-full bg-green-500/60" />
+          {/* ── Frontend column ── */}
+          <div className="flex flex-col gap-3">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.45 }}
+              className="flex items-center gap-2"
+            >
+              <span className="rounded-full bg-primary-500/15 px-3 py-1 text-[11px] font-semibold tracking-wide text-primary-400">Frontend</span>
+              <span className="text-xs text-slate-600">TypeScript SDK</span>
+            </motion.div>
+
+            {/* app.tsx */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <div className="rounded-xl border border-slate-800/60 bg-slate-900/50 p-5 backdrop-blur-sm">
+                <div className="flex items-center gap-4 text-xs text-slate-500">
+                  <div className="flex gap-1.5">
+                    <div className="h-3 w-3 rounded-full bg-red-500/60" />
+                    <div className="h-3 w-3 rounded-full bg-yellow-500/60" />
+                    <div className="h-3 w-3 rounded-full bg-green-500/60" />
+                  </div>
+                  <span>app.tsx</span>
+                  <span className="ml-auto text-[10px] text-slate-600">wrap your app once — point to your server</span>
                 </div>
-                <span>main.go</span>
-                <span className="ml-auto rounded-full bg-accent-500/15 px-2 py-0.5 text-[10px] font-medium text-accent-400">Backend</span>
+                <div className="mt-4 font-mono text-[13px] leading-relaxed">
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">1</span>
+                    <span><span className="text-purple-400">const</span> <span className="text-primary-300">config</span> = <span className="text-purple-400">new</span> <span className="text-yellow-300">PipewaveModuleConfig</span>({'({'}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">2</span>
+                    <span className="pl-4"><span className="text-primary-300">backendEndpoint</span>: <span className="text-green-300">'localhost:8080/pipewave'</span>,</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">3</span>
+                    <span className="pl-4"><span className="text-primary-300">getAccessToken</span>: <span className="text-purple-400">async</span> () =&gt; <span className="text-green-300">'token'</span>,</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">4</span>
+                    <span>{'})' }</span>
+                  </div>
+                  <div className="h-2" />
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">5</span>
+                    <span><span className="text-slate-500">&lt;</span><span className="text-yellow-300">PipewaveProvider</span> <span className="text-primary-300">config</span>={'{'}config{'}'}<span className="text-slate-500">&gt;</span></span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">6</span>
+                    <span className="pl-4"><span className="text-slate-500">&lt;</span><span className="text-yellow-300">Chat</span> <span className="text-primary-300">toUserId</span>=<span className="text-green-300">"UserB"</span> <span className="text-slate-500">/&gt;</span></span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">7</span>
+                    <span><span className="text-slate-500">&lt;/</span><span className="text-yellow-300">PipewaveProvider</span><span className="text-slate-500">&gt;</span></span>
+                  </div>
+                </div>
               </div>
-              <div className="mt-4 font-mono text-[13px] leading-relaxed">
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">1</span>
-                  <span><span className="text-primary-300">pw</span> := <span className="text-yellow-300">pipewave</span>.<span className="text-yellow-300">New</span>(config)</span>
+            </motion.div>
+
+            {/* useChat.ts */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <div className="rounded-xl border border-slate-800/60 bg-slate-900/50 p-5 backdrop-blur-sm">
+                <div className="flex items-center gap-4 text-xs text-slate-500">
+                  <div className="flex gap-1.5">
+                    <div className="h-3 w-3 rounded-full bg-red-500/60" />
+                    <div className="h-3 w-3 rounded-full bg-yellow-500/60" />
+                    <div className="h-3 w-3 rounded-full bg-green-500/60" />
+                  </div>
+                  <span>useChat.ts</span>
                 </div>
-                <div className="h-2" />
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">2</span>
-                  <span><span className="text-primary-300">pw</span>.<span className="text-yellow-300">Handle</span>(<span className="text-green-300">"CHAT_MESSAGE"</span>, func(<span className="text-orange-300">ctx</span>, <span className="text-orange-300">msg</span>) {'{'}</span>
+                <div className="mt-4 font-mono text-[13px] leading-relaxed">
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">1</span>
+                    <span><span className="text-purple-400">const</span> <span className="text-primary-300">handlers</span> = <span className="text-yellow-300">useMemo</span>(() =&gt; ({'{'}
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">2</span>
+                    <span className="pl-4"><span className="text-primary-300">CHAT_MESSAGE</span>: <span className="text-yellow-300">handleChat</span>,</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">3</span>
+                    <span className="pl-4"><span className="text-primary-300">NOTIFICATION</span>: <span className="text-yellow-300">showToast</span>,</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">4</span>
+                    <span>{'}'}), [])</span>
+                  </div>
+                  <div className="h-2" />
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">5</span>
+                    <span><span className="text-purple-400">const</span> {'{'} <span className="text-primary-300">send</span>, <span className="text-primary-300">status</span> {'}'} = <span className="text-yellow-300">usePipewave</span>(handlers)</span>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">3</span>
-                  <span className="pl-4"><span className="text-primary-300">ctx</span>.<span className="text-yellow-300">Broadcast</span>(<span className="text-orange-300">msg</span>)</span>
-                </div>
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">4</span>
-                  <span>{'}'})</span>
-                </div>
-                <div className="h-2" />
-                <div className="flex gap-3">
-                  <span className="text-slate-600 select-none w-4 text-right shrink-0">5</span>
-                  <span><span className="text-primary-300">pw</span>.<span className="text-yellow-300">Listen</span>(<span className="text-green-300">":8080"</span>)</span>
+                <div className="mt-4 flex items-center gap-2 rounded-lg bg-green-500/10 px-3 py-2 text-xs text-green-400">
+                  <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                  WebSocket connected
                 </div>
               </div>
-              <div className="mt-4 flex items-center gap-2 rounded-lg bg-accent-500/10 px-3 py-2 text-xs text-accent-400">
-                <div className="h-2 w-2 rounded-full bg-accent-400 animate-pulse" />
-                Listening on :8080
+            </motion.div>
+          </div>
+
+          {/* ── Backend column ── */}
+          <div className="flex flex-col gap-3">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.45 }}
+              className="flex items-center gap-2"
+            >
+              <span className="rounded-full bg-accent-500/15 px-3 py-1 text-[11px] font-semibold tracking-wide text-accent-400">Backend</span>
+              <span className="text-xs text-slate-600">Go module</span>
+            </motion.div>
+
+            {/* main.go — combined */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.55 }}
+            >
+              <div className="rounded-xl border border-slate-800/60 bg-slate-900/50 p-5 backdrop-blur-sm">
+                <div className="flex items-center gap-4 text-xs text-slate-500">
+                  <div className="flex gap-1.5">
+                    <div className="h-3 w-3 rounded-full bg-red-500/60" />
+                    <div className="h-3 w-3 rounded-full bg-yellow-500/60" />
+                    <div className="h-3 w-3 rounded-full bg-green-500/60" />
+                  </div>
+                  <span>main.go</span>
+                  <span className="ml-auto text-[10px] text-slate-600">init + register hooks + serve</span>
+                </div>
+                <div className="mt-4 font-mono text-[13px] leading-relaxed">
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">1</span>
+                    <span><span className="text-primary-300">pw</span> := <span className="text-yellow-300">pipewave</span>.<span className="text-yellow-300">NewPipewave</span>(<span className="text-yellow-300">pipewave</span>.<span className="text-yellow-300">PipewaveConfig</span>{'{'}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">2</span>
+                    <span className="pl-4"><span className="text-primary-300">ConfigStore</span>:       <span className="text-orange-300">getConfig</span>(),</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">3</span>
+                    <span className="pl-4"><span className="text-primary-300">RepositoryFactory</span>: <span className="text-yellow-300">ddbRepo</span>.<span className="text-orange-300">NewPostgresRepo</span>,</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">4</span>
+                    <span className="pl-4"><span className="text-primary-300">QueueFactory</span>:      <span className="text-yellow-300">queueprovider</span>.<span className="text-orange-300">QueueValkey</span>,</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">5</span>
+                    <span>{'})' }</span>
+                  </div>
+                  <div className="h-2" />
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">6</span>
+                    <span><span className="text-primary-300">pw</span>.<span className="text-yellow-300">SetFns</span>(&<span className="text-yellow-300">pipewave</span>.<span className="text-yellow-300">FunctionStore</span>{'{'}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">7</span>
+                    <span className="pl-4"><span className="text-primary-300">InspectToken</span>:  <span className="text-orange-300">inspectToken</span>,</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">8</span>
+                    <span className="pl-4"><span className="text-primary-300">HandleMessage</span>: &<span className="text-orange-300">handleMsg</span>{'{'}<span className="text-primary-300">i</span>: <span className="text-primary-300">pw</span>{'}'}{','}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">9</span>
+                    <span className="pl-4 text-slate-500">{'// OnNewConnection, OnCloseConnection'}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">10</span>
+                    <span>{'})' }</span>
+                  </div>
+                  <div className="h-2" />
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">11</span>
+                    <span><span className="text-primary-300">server</span> := &<span className="text-yellow-300">http</span>.<span className="text-yellow-300">Server</span>{'{'}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">12</span>
+                    <span className="pl-4"><span className="text-primary-300">Addr</span>:    <span className="text-green-300">":8080"</span>,</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">13</span>
+                    <span className="pl-4"><span className="text-primary-300">Handler</span>: <span className="text-yellow-300">http</span>.<span className="text-yellow-300">StripPrefix</span>(<span className="text-green-300">"/pipewave"</span>, <span className="text-primary-300">pw</span>.<span className="text-yellow-300">Mux</span>()),</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">14</span>
+                    <span>{'}'}</span>
+                  </div>
+                  <div className="h-2" />
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">15</span>
+                    <span><span className="text-purple-400">go</span> <span className="text-primary-300">server</span>.<span className="text-yellow-300">ListenAndServe</span>() <span className="text-slate-500">{'// non-blocking'}</span></span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">16</span>
+                    <span><span className="text-slate-400">{'<-'}</span><span className="text-primary-300">signalChan</span>  <span className="text-slate-500">{'// wait for SIGTERM'}</span></span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-slate-600 select-none w-4 text-right shrink-0">17</span>
+                    <span><span className="text-primary-300">pw</span>.<span className="text-yellow-300">Shutdown</span>()   <span className="text-slate-500">{'// graceful drain'}</span></span>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center gap-2 rounded-lg bg-accent-500/10 px-3 py-2 text-xs text-accent-400">
+                  <div className="h-2 w-2 rounded-full bg-accent-400 animate-pulse" />
+                  Listening on :8080
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
+
         </div>
       </div>
     </section>

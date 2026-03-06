@@ -4,8 +4,10 @@ Get Pipewave running in your Go application in under 5 minutes.
 
 ## Installation
 
+> Source code: [github.com/pipewave-dev/go-pkg](https://github.com/pipewave-dev/go-pkg)
+
 ```bash
-go get git.ponos-tech.com/pipewave/backend
+go get github.com/pipewave-dev/go-pkg
 ```
 
 ## Minimal Setup
@@ -14,60 +16,104 @@ go get git.ponos-tech.com/pipewave/backend
 package main
 
 import (
-    app "git.ponos-tech.com/pipewave/backend/app"
-    configprovider "git.ponos-tech.com/pipewave/backend/provider/config-provider"
     "context"
     "net/http"
+
+    pipewave "github.com/pipewave-dev/go-pkg"
+    postgresRepo "github.com/pipewave-dev/go-pkg/core/repository/impl-postgres"
+    configprovider "github.com/pipewave-dev/go-pkg/provider/config-provider"
+    queueprovider "github.com/pipewave-dev/go-pkg/provider/queue"
 )
 
 func main() {
-    config := configprovider.FromYaml(
-        []string{".config.yaml"},
-        &configprovider.Fns{
-            InspectToken: func(ctx context.Context, token string) (string, bool, error) {
-                // Return username from token
-                return parseToken(token), false, nil
-            },
-            HandleMessage: func(ctx context.Context, auth Auth, inputType string, data []byte) (string, []byte, error) {
-                // Process incoming messages
-                return "ECHO", []byte("Received: " + string(data)), nil
-            },
-        },
-    )
+    pw := pipewave.NewPipewave(pipewave.PipewaveConfig{
+        ConfigStore:       getConfig(),
+        RepositoryFactory: postgresRepo.NewPostgresRepo,
+        QueueFactory:      queueprovider.QueueValkey,
+    })
 
-    di := app.NewPipewave(config)
+    pw.SetFns(&pipewave.FunctionStore{
+        InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+            return parseToken(token), false, nil
+        },
+        HandleMessage:     &myHandler{i: pw},
+        OnNewConnection:   nil,
+        OnCloseConnection: nil,
+    })
 
     server := &http.Server{
         Addr:    ":8080",
-        Handler: di.Delivery.Mux(),
+        Handler: pw.Mux(),
     }
     server.ListenAndServe()
 }
 ```
 
-## Configuration File
+## Configuration
 
-Create `.config.yaml` in your project root:
+You can provide configuration using a Go struct:
+
+```go
+func getConfig() configprovider.ConfigStore {
+    return configprovider.FromGoStruct(
+        pipewave.ConfigEnv{
+            Env:     "my-app",
+            PodName: "pod-1",
+            Version: "0.0.1",
+            WorkerPool: configprovider.WorkerPoolT{
+                Buffer:         100,
+                UpperThreshold: 80,
+                LowerThreshold: 20,
+            },
+            RateLimiter: configprovider.RateLimiterT{
+                UserRate:       100,
+                UserBurst:      200,
+                AnonymousRate:  10,
+                AnonymousBurst: 20,
+            },
+            Cors: configprovider.CorsConfig{
+                Enabled:      true,
+                RegexOrigins: []string{`^(https?://)?localhost:(\d+)/?$`},
+            },
+            Valkey: configprovider.ValkeyT{
+                PrimaryAddress: "localhost:6379",
+                ReplicaAddress: "localhost:6379",
+                Password:       "yourPassword",
+                DatabaseIdx:    0,
+            },
+            Postgres: configprovider.PostgresT{
+                CreateTables: true,
+                Host:         "localhost",
+                Port:         5432,
+                DBName:       "postgres",
+                User:         "postgres",
+                Password:     "postgres",
+                SSLMode:      "disable",
+                MaxConns:     15,
+                MinConns:     1,
+            },
+        },
+    )
+}
+```
+
+## Infrastructure
+
+Pipewave requires **PostgreSQL** (connection state storage) and **Valkey/Redis** (PubSub queue). You can run them with Docker Compose:
 
 ```yaml
-server:
-  port: 8080
-  read_timeout: 30s
-  write_timeout: 30s
+services:
+  valkey:
+    image: valkey/valkey:latest
+    ports:
+      - "6379:6379"
 
-websocket:
-  max_message_size: 65536
-  heartbeat_interval: 30s
-  handshake_timeout: 10s
-
-pubsub:
-  type: valkey
-  address: localhost:6379
-
-storage:
-  type: dynamodb
-  table_name: pipewave_connections
-  region: ap-southeast-1
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
 ```
 
 ## What's Next
@@ -75,3 +121,4 @@ storage:
 - Configure [InspectToken](/docs/backend/inspect-fn) for your auth system
 - Implement [HandleMessage](/docs/backend/handler-fn) for your business logic
 - Use the [Services API](/docs/backend/services-api) to push messages from your backend
+- Browse working examples at [github.com/pipewave-dev/example](https://github.com/pipewave-dev/example)

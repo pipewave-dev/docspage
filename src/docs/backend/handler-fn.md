@@ -2,10 +2,16 @@
 
 The `HandleMessage` function processes incoming WebSocket frames from clients. It's where you implement your business logic for handling multiplexed message types.
 
-## Signature
+> Package: [github.com/pipewave-dev/go-pkg](https://github.com/pipewave-dev/go-pkg) · See also: [examples](https://github.com/pipewave-dev/example)
+
+## Interface
+
+`HandleMessage` is an interface that requires implementing the `HandleMessage` method:
 
 ```go
-HandleMessage: func(ctx context.Context, auth WebsocketAuth, inputType string, data []byte) (outputType string, res []byte, err error)
+type HandleMessage interface {
+    HandleMessage(ctx context.Context, auth voAuth.WebsocketAuth, inputType string, data []byte) (outputType string, res []byte, err error)
+}
 ```
 
 ### Parameters
@@ -13,7 +19,7 @@ HandleMessage: func(ctx context.Context, auth WebsocketAuth, inputType string, d
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `ctx` | `context.Context` | Request context |
-| `auth` | `WebsocketAuth` | Authenticated user info from `InspectToken` |
+| `auth` | `voAuth.WebsocketAuth` | Authenticated user info (contains `UserID` from `InspectToken`) |
 | `inputType` | `string` | The message type identifier sent by the client |
 | `data` | `[]byte` | The binary payload (typically MessagePack-encoded) |
 
@@ -21,53 +27,123 @@ HandleMessage: func(ctx context.Context, auth WebsocketAuth, inputType string, d
 
 | Value | Type | Description |
 |-------|------|-------------|
-| `outputType` | `string` | The response message type sent back to the client |
+| `outputType` | `string` | The response message type sent back to the client. Return `""` for no response |
 | `res` | `[]byte` | The response binary payload |
 | `err` | `error` | Return an error to send an error frame to the client |
 
-## Example: Multi-Type Handler
+## Creating a Handler
+
+Create a struct that holds a reference to the Pipewave instance, which gives you access to the Services API:
 
 ```go
-HandleMessage: func(ctx context.Context, auth WebsocketAuth, inputType string, data []byte) (string, []byte, error) {
+import (
+    "github.com/pipewave-dev/go-pkg/core/delivery"
+    voAuth "github.com/pipewave-dev/go-pkg/core/domain/value-object/auth"
+    "github.com/vmihailenco/msgpack/v5"
+)
+
+type handleMsg struct {
+    i delivery.ModuleDelivery
+}
+```
+
+Register it via `SetFns`:
+
+```go
+pw := pipewave.NewPipewave(pipewave.PipewaveConfig{...})
+
+pw.SetFns(&pipewave.FunctionStore{
+    HandleMessage: &handleMsg{i: pw},
+    // ...other functions
+})
+```
+
+## Example: Chat Application
+
+```go
+const (
+    // Client-to-Server message types
+    MsgTypeChatSendMsg = "CHAT_SEND_MSG"
+    MsgTypeChatTyping  = "CHAT_TYPING"
+
+    // Server-to-Client message types
+    MsgTypeChatIncomingMsg = "CHAT_INCOMING_MSG"
+    MsgTypeChatUserTyping  = "CHAT_USER_TYPING"
+    MsgTypeChatAck         = "CHAT_ACK"
+    MsgTypeChatFail        = "CHAT_FAIL"
+)
+
+// Payload structs
+type ChatSendMsg struct {
+    ToUserID string `msgpack:"to_user_id"`
+    Content  string `msgpack:"content"`
+}
+
+type ChatIncomingMsg struct {
+    FromUserID string `msgpack:"from_user_id"`
+    Content    string `msgpack:"content"`
+    Timestamp  int64  `msgpack:"timestamp"`
+}
+
+func (h *handleMsg) HandleMessage(ctx context.Context, auth voAuth.WebsocketAuth, inputType string, data []byte) (string, []byte, error) {
     switch inputType {
-    case "CHAT_SEND":
-        return handleChatSend(ctx, auth, data)
-    case "TYPING_INDICATOR":
-        return handleTyping(ctx, auth, data)
-    case "READ_RECEIPT":
-        return handleReadReceipt(ctx, auth, data)
+    case MsgTypeChatSendMsg:
+        var msg ChatSendMsg
+        if err := msgpack.Unmarshal(data, &msg); err != nil {
+            return "", nil, nil
+        }
+
+        // Check if the target user is online
+        isOnline, err := h.i.Services().CheckOnline(ctx, msg.ToUserID)
+        if err != nil || !isOnline {
+            return MsgTypeChatFail,
+                mustMarshal(ChatSendMsgFail{Reason: "User is not online"}), nil
+        }
+
+        // Forward message to target user
+        err = h.i.Services().SendToUser(ctx, msg.ToUserID, MsgTypeChatIncomingMsg,
+            mustMarshal(ChatIncomingMsg{
+                FromUserID: auth.UserID,
+                Content:    msg.Content,
+                Timestamp:  time.Now().Unix(),
+            }))
+        if err != nil {
+            return MsgTypeChatFail,
+                mustMarshal(ChatSendMsgFail{Reason: "Failed to send message"}), nil
+        }
+
+        // Acknowledge the sender
+        return MsgTypeChatAck, mustMarshal(ChatSendMsgAck{Ok: true}), nil
+
+    case MsgTypeChatTyping:
+        var typing ChatTyping
+        if err := msgpack.Unmarshal(data, &typing); err != nil {
+            return "", nil, nil
+        }
+        h.i.Services().SendToUser(ctx, typing.ToUserID, MsgTypeChatUserTyping,
+            mustMarshal(ChatUserTyping{FromUserID: auth.UserID}))
+        return "", nil, nil
+
     default:
-        return "ERROR", []byte("unknown message type: " + inputType), nil
+        return "ECHO_RESPONSE",
+            fmt.Appendf(nil, "Got [ %s ] at %s", string(data), time.Now().Format(time.TimeOnly)),
+            nil
     }
-},
-```
-
-## Working with MessagePack
-
-Since Pipewave uses binary framing, you'll typically decode the `data` parameter using MessagePack:
-
-```go
-import "github.com/vmihailenco/msgpack/v5"
-
-type ChatMessage struct {
-    RoomID  string `msgpack:"room_id"`
-    Content string `msgpack:"content"`
 }
 
-func handleChatSend(ctx context.Context, auth WebsocketAuth, data []byte) (string, []byte, error) {
-    var msg ChatMessage
-    if err := msgpack.Unmarshal(data, &msg); err != nil {
-        return "ERROR", []byte("invalid payload"), nil
+func mustMarshal(v any) []byte {
+    b, err := msgpack.Marshal(v)
+    if err != nil {
+        panic(err)
     }
-
-    // Process and broadcast...
-    response, _ := msgpack.Marshal(map[string]string{"status": "sent"})
-    return "CHAT_SENT", response, nil
+    return b
 }
 ```
 
-## Error Handling
+## Key Points
 
-- Return a non-nil `error` to send an error frame back to the client
-- The error message is serialized into the `Error` field of the response frame
-- The connection is **not** closed on error — only the specific message fails
+- The handler receives the `delivery.ModuleDelivery` interface, which gives access to `Services()` for cross-user messaging
+- Use `h.i.Services().SendToUser()` to forward messages to other connected users
+- Use `h.i.Services().CheckOnline()` to verify if a user is currently connected
+- Return `"", nil, nil` when no response should be sent back to the sender (e.g., typing indicators)
+- Return a non-nil `error` to send an error frame back to the client. The connection is **not** closed on error
