@@ -116,6 +116,41 @@ services:
       POSTGRES_PASSWORD: postgres
 ```
 
+## Mount onto an Existing Server
+
+If your app already has an `http.ServeMux` or router, you can mount Pipewave under a sub-path using `http.StripPrefix`:
+
+```go
+func main() {
+    pw := pipewave.NewPipewave(pipewave.PipewaveConfig{ /* ... */ })
+    pw.SetFns(&pipewave.FunctionStore{ /* ... */ })
+
+    // Your existing mux
+    mux := http.NewServeMux()
+    mux.HandleFunc("/api/health", healthHandler)
+    mux.HandleFunc("/api/users", usersHandler)
+
+    // Mount Pipewave under /ws/
+    mux.Handle("/ws/", http.StripPrefix("/ws", pw.Mux()))
+
+    server := &http.Server{
+        Addr:    ":8080",
+        Handler: mux,
+    }
+    server.ListenAndServe()
+}
+```
+
+> **Note:** The prefix you strip (`/ws`) must match the path registered on the mux (`/ws/`). Pipewave's internal routes will then be resolved relative to that prefix.
+
+Update the frontend `PipewaveProvider` to point to the new path:
+
+```tsx
+<PipewaveProvider endpoint="/ws">
+  <App />
+</PipewaveProvider>
+```
+
 ## What's Next
 
 - Configure [InspectToken](/docs/backend/inspect-fn) for your auth system

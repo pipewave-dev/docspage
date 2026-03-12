@@ -62,7 +62,7 @@ docpages/
 │   │   │   ├── configuration.md
 │   │   │   ├── inspect-fn.md
 │   │   │   ├── handler-fn.md
-│   │   │   ├── services-api.md
+│   │   │   ├── module-api.md
 │   │   │   └── scaling.md
 │   │   └── frontend/
 │   │       ├── quick-start.md
