@@ -117,6 +117,37 @@ export default function Architecture() {
               </g>
             </svg>
           </div>
+
+          {/* Flow description */}
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                color: 'text-cyan-400',
+                title: 'Connect',
+                desc: 'Clients connect via WebSocket or Long Polling. The Load Balancer distributes traffic — no sticky sessions needed.',
+              },
+              {
+                color: 'text-cyan-300',
+                title: 'Process',
+                desc: 'Each Pipewave instance handles connections with kqueue/epoll for minimal memory usage, even with thousands of idle connections.',
+              },
+              {
+                color: 'text-teal-400',
+                title: 'Broadcast',
+                desc: 'PubSub (Valkey/Redis) enables cross-instance messaging. A message sent on Instance 1 reaches users on Instance 3.',
+              },
+              {
+                color: 'text-purple-400',
+                title: 'Persist',
+                desc: 'Connection state is stored in PostgreSQL or DynamoDB, making every instance stateless and replaceable.',
+              },
+            ].map((item) => (
+              <div key={item.title} className="rounded-lg border border-slate-800/40 bg-slate-900/20 p-4">
+                <h4 className={`text-sm font-semibold ${item.color}`}>{item.title}</h4>
+                <p className="mt-1 text-xs leading-relaxed text-slate-400">{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </motion.div>
       </div>
     </section>

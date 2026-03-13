@@ -58,6 +58,35 @@ pw.SetFns(&pipewave.FunctionStore{
 })
 ```
 
+## Example: Echo Server (Simplest)
+
+The simplest handler — echoes back whatever the client sends:
+
+```go
+func (h *handleMsg) HandleMessage(ctx context.Context, auth voAuth.WebsocketAuth, inputType string, data []byte) (string, []byte, error) {
+    // Echo: return the same data with a response type
+    return "ECHO_RESPONSE", data, nil
+}
+```
+
+That's it! The client sends any message type with any payload, and the server returns it as `ECHO_RESPONSE`. This is a good starting point to verify your setup works before adding business logic.
+
+To handle specific message types, use a `switch`:
+
+```go
+func (h *handleMsg) HandleMessage(ctx context.Context, auth voAuth.WebsocketAuth, inputType string, data []byte) (string, []byte, error) {
+    switch inputType {
+    case "PING":
+        return "PONG", nil, nil
+    case "GREET":
+        greeting := fmt.Appendf(nil, "Hello %s!", auth.UserID)
+        return "GREETING", greeting, nil
+    default:
+        return "ECHO_RESPONSE", data, nil
+    }
+}
+```
+
 ## Example: Chat Application
 
 ```go

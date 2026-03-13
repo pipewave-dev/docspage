@@ -2,6 +2,17 @@
 
 Pipewave is a high-performance WebSocket & Long-Polling engine designed for modern web applications. It provides a seamless, production-ready module for both **Go backends** and **React/TypeScript frontends**.
 
+## Prerequisites
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| **Go** | 1.21+ | Backend runtime |
+| **Node.js** | 18+ | Frontend build toolchain |
+| **React** | 18+ or 19 | Frontend framework |
+| **TypeScript** | 5.0+ | Recommended, not required |
+| **Valkey / Redis** | 7.0+ | PubSub for multi-instance (optional for single instance) |
+| **PostgreSQL** | 14+ | Connection store (or DynamoDB via adapter) |
+
 ## Why Pipewave?
 
 - **Multiplexed Protocol** — Send typed messages (`Type` + binary `Data`) over a single connection
@@ -10,6 +21,21 @@ Pipewave is a high-performance WebSocket & Long-Polling engine designed for mode
 - **High Performance** — Binary framing with MessagePack, kernel-level socket management (kqueue/epoll)
 - **Automatic Resilience** — Built-in heartbeat, auto-reconnect, and Long Polling fallback
 - **React First-Class** — `usePipewave()` hook with reactive status and typed event handlers
+
+### How Does Pipewave Compare?
+
+| Feature | Pipewave | Socket.io | Centrifugo | Pusher |
+|---------|----------|-----------|------------|--------|
+| **Protocol** | Binary (MessagePack) | JSON + Binary | JSON + Protobuf | JSON |
+| **Addressing** | User-based | Connection-based | Channel-based | Channel-based |
+| **Backend Language** | Go | Node.js | Go | Hosted / Multi |
+| **Frontend SDK** | React Hook | Framework-agnostic | Framework-agnostic | Framework-agnostic |
+| **Sticky Sessions** | Not required | Required (default) | Not required | N/A (hosted) |
+| **Long Polling Fallback** | Automatic | Automatic | SockJS option | Automatic |
+| **Self-hosted** | Yes | Yes | Yes | No (SaaS) |
+| **Multiplexed Types** | Built-in | Manual namespaces | Channels | Channels |
+
+Pipewave is ideal when you need **user-based messaging** with a **Go backend** and **React frontend**, with binary performance and horizontal scaling out of the box.
 
 ## Quick Overview
 
@@ -54,6 +80,8 @@ const { status, send, resetRetryCount } = usePipewave(onMessage)
 
 ## Next Steps
 
-- Read the [Architecture](/docs/architecture) overview to understand the system design
+- Read the [Core Concepts](/docs/concepts) to understand how Pipewave works
+- Follow the [Tutorial](/docs/tutorial) to build a complete chat app end-to-end
 - Follow the [Backend Quick Start](/docs/backend/quick-start) to set up your Go server
 - Follow the [Frontend Quick Start](/docs/frontend/quick-start) to wire up your React app
+- Read the [Architecture](/docs/architecture) overview for deep technical details

@@ -2,6 +2,17 @@ import { motion } from 'framer-motion'
 
 const steps = [
     {
+        step: '00',
+        title: 'Install Dependencies',
+        description: 'Add the Go backend package and the React frontend SDK to your project.',
+        code: `# Backend (Go)
+go get github.com/pipewave-dev/go-pkg
+
+# Frontend (React)
+npm install @pipewave/reactpkg @msgpack/msgpack`,
+        lang: 'Bash',
+    },
+    {
         step: '01',
         title: 'Setup Backend',
         description: 'Create a Pipewave instance, provide InspectToken and HandleMessage, then mount the mux.',
@@ -72,7 +83,7 @@ export default function HowItWorks() {
                         How it works
                     </h2>
                     <p className="mt-4 text-lg text-slate-400">
-                        Four steps to real-time communication
+                        Five steps to real-time communication
                     </p>
                 </div>
 

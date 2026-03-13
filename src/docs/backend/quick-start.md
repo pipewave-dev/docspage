@@ -33,7 +33,7 @@ func main() {
     })
 
     pw.SetFns(&pipewave.FunctionStore{
-        InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+        InspectToken: func(ctx context.Context, token string) (userID string, isAnonymous bool, err error) {
             return parseToken(token), false, nil
         },
         HandleMessage:     &myHandler{i: pw},

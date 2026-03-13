@@ -10,6 +10,8 @@ export const docsNavigation: NavItem[] = [
         path: '/docs',
         children: [
             { title: 'Overview', path: '/docs' },
+            { title: 'Core Concepts', path: '/docs/concepts' },
+            { title: 'Tutorial', path: '/docs/tutorial' },
             { title: 'Architecture', path: '/docs/architecture' },
         ],
     },
@@ -18,10 +20,10 @@ export const docsNavigation: NavItem[] = [
         path: '/docs/backend/quick-start',
         children: [
             { title: 'Quick Start', path: '/docs/backend/quick-start' },
-            { title: 'Configuration', path: '/docs/backend/configuration' },
             { title: 'InspectToken Function', path: '/docs/backend/inspect-fn' },
             { title: 'HandleMessage Function', path: '/docs/backend/handler-fn' },
             { title: 'Module API', path: '/docs/backend/module-api' },
+            { title: 'Configuration', path: '/docs/backend/configuration' },
             { title: 'Cookie & Sticky Sessions', path: '/docs/backend/cookie' },
             { title: 'Scaling & Deployment', path: '/docs/backend/scaling' },
         ],
@@ -35,6 +37,14 @@ export const docsNavigation: NavItem[] = [
             { title: 'usePipewave Hook', path: '/docs/frontend/use-pipewave-hook' },
             { title: 'Binary Protocol', path: '/docs/frontend/binary-protocol' },
             { title: 'Long Polling Fallback', path: '/docs/frontend/long-polling-fallback' },
+            { title: 'API Reference', path: '/docs/frontend/api-reference' },
+        ],
+    },
+    {
+        title: 'Help',
+        path: '/docs/troubleshooting',
+        children: [
+            { title: 'Troubleshooting', path: '/docs/troubleshooting' },
         ],
     },
 ]

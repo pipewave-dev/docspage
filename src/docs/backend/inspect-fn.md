@@ -31,7 +31,7 @@ Register the function via `SetFns`:
 
 ```go
 pw.SetFns(&pipewave.FunctionStore{
-    InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+    InspectToken: func(ctx context.Context, token string) (userID string, isAnonymous bool, err error) {
         // Your token validation logic
         return userID, false, nil
     },
@@ -44,7 +44,7 @@ pw.SetFns(&pipewave.FunctionStore{
 For development or demo purposes, treat the token directly as the username:
 
 ```go
-InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+InspectToken: func(ctx context.Context, token string) (userID string, isAnonymous bool, err error) {
     token = strings.TrimSpace(token)
     token = strings.TrimPrefix(token, "Bearer ")
     return strings.TrimSpace(token), false, nil
@@ -54,7 +54,7 @@ InspectToken: func(ctx context.Context, token string) (string, bool, error) {
 ## Example: JWT Validation
 
 ```go
-InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+InspectToken: func(ctx context.Context, token string) (userID string, isAnonymous bool, err error) {
     claims, err := jwt.ValidateToken(token)
     if err != nil {
         return "", false, fmt.Errorf("invalid token: %w", err)
@@ -66,7 +66,7 @@ InspectToken: func(ctx context.Context, token string) (string, bool, error) {
 ## Example: API Key Lookup
 
 ```go
-InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+InspectToken: func(ctx context.Context, token string) (userID string, isAnonymous bool, err error) {
     user, err := db.FindUserByAPIKey(ctx, token)
     if err != nil {
         return "", false, err
@@ -80,7 +80,7 @@ InspectToken: func(ctx context.Context, token string) (string, bool, error) {
 If you want to allow anonymous connections (e.g., for public dashboards):
 
 ```go
-InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+InspectToken: func(ctx context.Context, token string) (userID string, isAnonymous bool, err error) {
     if token == "" || token == "anonymous" {
         anonymousID := fmt.Sprintf("anon_%s", uuid.New().String())
         return anonymousID, true, nil

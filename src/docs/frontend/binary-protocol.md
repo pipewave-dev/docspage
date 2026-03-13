@@ -4,6 +4,8 @@ Pipewave uses binary frames with MessagePack serialization for efficient data tr
 
 > npm: [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) · Source: [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg)
 
+> **Note:** You don't need to understand the binary protocol to get started with Pipewave. The SDK handles framing and transport automatically. You just call `encode()` to send and `decode()` to receive — that's it. This page is for developers who want to understand the wire format or implement custom serialization.
+
 ## Why Binary?
 
 | Aspect | JSON (Text) | MessagePack (Binary) |
