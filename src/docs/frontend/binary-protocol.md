@@ -2,6 +2,8 @@
 
 Pipewave uses binary frames with MessagePack serialization for efficient data transfer.
 
+> npm: [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) · Source: [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg)
+
 ## Why Binary?
 
 | Aspect | JSON (Text) | MessagePack (Binary) |
@@ -24,59 +26,86 @@ interface WebsocketResponse {
 }
 ```
 
+## Recommended Library
+
+Install `@msgpack/msgpack` for encoding and decoding:
+
+```bash
+npm install @msgpack/msgpack
+```
+
+```tsx
+import { encode, decode } from '@msgpack/msgpack'
+```
+
 ## Decoding Data in Handlers
 
 The `data` parameter in your handlers is a raw `Uint8Array`. How you decode it depends on what the server sends:
 
-### Simple Text
-
-```tsx
-const handlers = useMemo(() => ({
-    NOTIFICATION: async (data: Uint8Array) => {
-        const text = new TextDecoder().decode(data)
-        showNotification(text)
-    },
-}), [])
-```
-
-### JSON Payload
-
-```tsx
-const handlers = useMemo(() => ({
-    CHAT_MESSAGE: async (data: Uint8Array) => {
-        const json = JSON.parse(new TextDecoder().decode(data))
-        addMessage(json)
-    },
-}), [])
-```
-
-### MessagePack Payload
-
-For maximum efficiency, use a MessagePack library:
+### MessagePack Payload (Recommended)
 
 ```tsx
 import { decode } from '@msgpack/msgpack'
 
-const handlers = useMemo(() => ({
-    LIVE_DATA: async (data: Uint8Array) => {
-        const payload = decode(data) as LiveDataPayload
-        updateDashboard(payload)
+const onMessage: OnMessage = useMemo(() => ({
+    CHAT_INCOMING_MSG: async (data: Uint8Array, id: string) => {
+        const payload = decode(data) as {
+            from_user_id: string
+            content: string
+            timestamp: number
+        }
+        addMessage(payload)
+    },
+}), [])
+```
+
+### Simple Text
+
+If the server sends raw text (e.g., echo responses):
+
+```tsx
+const onMessage: OnMessage = useMemo(() => ({
+    ECHO_RESPONSE: async (data: Uint8Array) => {
+        const text = new TextDecoder().decode(data)
+        console.log(text)
     },
 }), [])
 ```
 
 ## Sending Binary Data
 
-When sending data via the `send` function, encode your payload to `Uint8Array`:
+When sending data via the `send` function, encode your payload with MessagePack:
 
 ```tsx
 import { encode } from '@msgpack/msgpack'
 
-const sendAction = () => {
-    send({
-        id: crypto.randomUUID(),
-        msgType: 'ACTION',
-        data: encode({ actionType: 'click', targetId: 42 }),
-    })
+send({
+    id: crypto.randomUUID(),
+    msgType: 'CHAT_SEND_MSG',
+    data: encode({
+        to_user_id: 'user_123',
+        content: 'Hello world',
+    }),
+})
+```
+
+## Defining Payload Types
+
+Define TypeScript interfaces that match your backend structs:
+
+```tsx
+// Matches Go struct with `msgpack:"..."` tags
+interface ChatSendMsg {
+    to_user_id: string
+    content: string
 }
+
+interface ChatIncomingMsg {
+    from_user_id: string
+    content: string
+    timestamp: number
+}
+
+// Use in handlers
+const payload = decode(data) as ChatIncomingMsg
 ```

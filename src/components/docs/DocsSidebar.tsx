@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
 import { docsNavigation } from '@/constants/navigation'
-import type { NavItem } from '@/constants/navigation'
 
 interface DocsSidebarProps {
   onNavigate?: () => void
@@ -11,13 +10,13 @@ export default function DocsSidebar({ onNavigate }: DocsSidebarProps) {
 
   return (
     <nav className="space-y-6">
-      {docsNavigation.map((section: NavItem) => (
+      {docsNavigation.map((section) => (
         <div key={section.title}>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
             {section.title}
           </h3>
           <ul className="space-y-0.5">
-            {section.children?.map((item: NavItem) => {
+            {section.children?.map((item) => {
               const isActive = location.pathname === item.path
               return (
                 <li key={item.path}>

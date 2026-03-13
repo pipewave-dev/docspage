@@ -2,13 +2,15 @@
 
 When WebSocket connections are blocked or fail repeatedly, Pipewave automatically falls back to Long Polling with zero code changes.
 
+> npm: [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) · Source: [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg)
+
 ## How It Works
 
 1. The frontend attempts a WebSocket connection
 2. If the connection fails, it retries with exponential backoff
-3. After reaching `onMaxRetry`, it transparently switches to `LongPollingService`
+3. After max retries, it transparently switches to `LongPollingService`
 4. The `usePipewave` API continues to work identically — handlers fire the same way
-5. The `status` value changes to `'LONG_POLLING'` so you can inform users if needed
+5. The `status` value changes to `'SUSPEND'` so you can inform users and offer a retry button
 
 ## Automatic Batching
 
@@ -22,16 +24,19 @@ This means Long Polling performance remains excellent even under high message vo
 
 ## Status Indicator
 
-Show users when they're on Long Polling:
+Show users when the connection is suspended and offer retry:
 
 ```tsx
 function ConnectionBanner() {
-    const { status } = usePipewave()
+    const { status, resetRetryCount } = usePipewave(useMemo(() => ({}), []))
 
-    if (status === 'LONG_POLLING') {
+    if (status === 'SUSPEND') {
         return (
-            <div className="bg-blue-500/10 text-blue-400 px-4 py-2 text-sm">
-                Using Long Polling mode. Real-time updates may be slightly delayed.
+            <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '8px 16px' }}>
+                Connection lost. Real-time updates paused.
+                <button onClick={resetRetryCount} style={{ marginLeft: 8 }}>
+                    Retry
+                </button>
             </div>
         )
     }

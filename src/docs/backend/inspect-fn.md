@@ -2,6 +2,8 @@
 
 The `InspectToken` function is called when a client initiates a WebSocket upgrade or Long Polling session. It's your bridge between Pipewave and your authentication system.
 
+> Package: [github.com/pipewave-dev/go-pkg](https://github.com/pipewave-dev/go-pkg)
+
 ## Signature
 
 ```go
@@ -13,15 +15,41 @@ InspectToken: func(ctx context.Context, token string) (username string, isAnonym
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `ctx` | `context.Context` | Request context |
-| `token` | `string` | The access token sent by the client |
+| `token` | `string` | The access token sent by the client (may include "Bearer " prefix) |
 
 ### Return Values
 
 | Value | Type | Description |
 |-------|------|-------------|
 | `username` | `string` | Unique user identifier. All connections with the same username are grouped together |
-| `isAnonymous` | `bool` | If `true`, the connection is treated as anonymous (limited capabilities) |
+| `isAnonymous` | `bool` | If `true`, the connection is treated as anonymous (limited rate) |
 | `err` | `error` | Return an error to reject the connection |
+
+## Registration
+
+Register the function via `SetFns`:
+
+```go
+pw.SetFns(&pipewave.FunctionStore{
+    InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+        // Your token validation logic
+        return userID, false, nil
+    },
+    // ...other functions
+})
+```
+
+## Example: Simple Token (Demo)
+
+For development or demo purposes, treat the token directly as the username:
+
+```go
+InspectToken: func(ctx context.Context, token string) (string, bool, error) {
+    token = strings.TrimSpace(token)
+    token = strings.TrimPrefix(token, "Bearer ")
+    return strings.TrimSpace(token), false, nil
+},
+```
 
 ## Example: JWT Validation
 

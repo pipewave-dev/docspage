@@ -16,27 +16,41 @@ Pipewave is a high-performance WebSocket & Long-Polling engine designed for mode
 ### Backend (Go)
 
 ```go
-config := configprovider.FromYaml([]string{".config.yaml"}, &configprovider.Fns{
-    InspectToken: func(ctx context.Context, token string) (string, bool, error) {
-        return validateToken(token)
-    },
-    HandleMessage: func(ctx context.Context, auth Auth, msgType string, data []byte) (string, []byte, error) {
-        return "RESPONSE", processMessage(msgType, data), nil
-    },
+pw := pipewave.NewPipewave(pipewave.PipewaveConfig{
+    ConfigStore:       configprovider.FromGoStruct(pipewave.ConfigEnv{...}),
+    RepositoryFactory: postgresRepo.NewPostgresRepo,
+    QueueFactory:      queueprovider.QueueValkey,
 })
 
-di := app.NewPipewave(config)
-http.ListenAndServe(":8080", di.Delivery.Mux())
+pw.SetFns(&pipewave.FunctionStore{
+    InspectToken:  inspectToken,
+    HandleMessage: &myHandler{i: pw},
+})
+
+http.ListenAndServe(":8080", pw.Mux())
 ```
 
 ### Frontend (React)
 
 ```tsx
-const { status, send } = usePipewave({
-    CHAT_MESSAGE: async (data) => handleChat(data),
-    NOTIFICATION: async (data) => showToast(data),
-})
+const onMessage: OnMessage = useMemo(() => ({
+    CHAT_INCOMING_MSG: async (data: Uint8Array, id: string) => {
+        const payload = decode(data) as ChatIncomingMsg
+        // handle message...
+    },
+}), [])
+
+const { status, send, resetRetryCount } = usePipewave(onMessage)
 ```
+
+## Resources
+
+| | Link |
+|---|---|
+| **Backend (Go)** | [github.com/pipewave-dev/go-pkg](https://github.com/pipewave-dev/go-pkg) |
+| **Frontend (React)** | [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg) |
+| **npm package** | [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) |
+| **Examples** | [github.com/pipewave-dev/example](https://github.com/pipewave-dev/example) |
 
 ## Next Steps
 

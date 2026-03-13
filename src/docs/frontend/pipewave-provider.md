@@ -2,13 +2,16 @@
 
 The `PipewaveProvider` component manages the WebSocket lifecycle and provides connection context to all child components.
 
+> npm: [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) · Source: [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg)
+
 ## Basic Usage
 
 ```tsx
-import { PipewaveProvider, PipewaveModuleConfig } from '@pipewave/react'
+import { PipewaveProvider, PipewaveModuleConfig } from '@pipewave/reactpkg'
 
 const config = new PipewaveModuleConfig({
-    backendEndpoint: 'api.example.com/websocket',
+    backendEndpoint: 'localhost:8080/websocket',
+    insecure: true,
     getAccessToken: async () => getToken(),
 })
 
@@ -44,22 +47,33 @@ const config = new PipewaveModuleConfig({
 
 ## Event Handler
 
-You can optionally provide global event handlers:
+You can optionally provide global event handlers via the `eventHandler` prop:
 
 ```tsx
-import type { WebsocketEventHandler } from '@pipewave/react'
-
-const eventHandler: WebsocketEventHandler = {
-    onConnect: () => console.log('Connected'),
-    onDisconnect: () => console.log('Disconnected'),
-    onError: (err) => console.error('WS Error:', err),
-    onMaxRetry: () => console.warn('Max retries reached, falling back to Long Polling'),
+const eventHandler = {
+    onOpen: async () => {
+        console.log('WebSocket connected')
+    },
+    onClose: async () => {
+        console.log('WebSocket disconnected')
+    },
+    onError: async (error: Event) => {
+        console.error('WebSocket error:', error)
+    },
 }
 
 <PipewaveProvider config={config} eventHandler={eventHandler}>
     <App />
 </PipewaveProvider>
 ```
+
+### Event Handler Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `onOpen` | `async () => void` | Called when WebSocket connection is established |
+| `onClose` | `async () => void` | Called when WebSocket connection is closed |
+| `onError` | `async (error: Event) => void` | Called when a WebSocket error occurs |
 
 ## Provider Behavior
 
