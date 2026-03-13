@@ -25,6 +25,9 @@ export default function Navbar() {
             </svg>
           </div>
           <span className="text-lg font-bold text-white">Pipewave</span>
+          <span className="rounded border border-slate-700 px-1.5 py-0.5 text-xs font-medium text-slate-500">
+            v0.1.0
+          </span>
         </Link>
 
         {/* Desktop nav */}

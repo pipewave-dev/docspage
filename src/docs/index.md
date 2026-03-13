@@ -45,12 +45,12 @@ const { status, send, resetRetryCount } = usePipewave(onMessage)
 
 ## Resources
 
-| | Link |
-|---|---|
-| **Backend (Go)** | [github.com/pipewave-dev/go-pkg](https://github.com/pipewave-dev/go-pkg) |
-| **Frontend (React)** | [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg) |
-| **npm package** | [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) |
-| **Examples** | [github.com/pipewave-dev/example](https://github.com/pipewave-dev/example) |
+| | Link | Version |
+|---|---|---|
+| **Backend (Go)** | [github.com/pipewave-dev/go-pkg](https://github.com/pipewave-dev/go-pkg) | `v0.1.0` |
+| **Frontend (React)** | [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg) | `v0.1.0` |
+| **npm package** | [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) | `v0.1.0` |
+| **Examples** | [github.com/pipewave-dev/example](https://github.com/pipewave-dev/example) | — |
 
 ## Next Steps
 
