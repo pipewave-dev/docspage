@@ -2,34 +2,6 @@
 
 Common issues and how to resolve them.
 
-## Enable Debug Mode
-
-Before debugging, enable debug logging on both sides:
-
-**Frontend** — Set `debugMode: true` in your config:
-
-```tsx
-const config = new PipewaveModuleConfig({
-    backendEndpoint: 'localhost:8080/pipewave',
-    debugMode: true,  // Logs connection events, message routing, and errors to console
-    // ...
-})
-```
-
-With debug mode enabled, open your browser's Developer Tools → Console to see:
-- Connection attempts and status changes
-- Message send/receive events with types
-- Reconnection attempts and fallback triggers
-
-**Backend** — Set `Env: "development"` in your config to enable verbose logging:
-
-```go
-ConfigStore: configprovider.FromGoStruct(pipewave.ConfigEnv{
-    Env: "development",
-    // ...
-})
-```
-
 ## Common Issues
 
 ### "WebSocket connection failed" / Status stays SUSPEND
@@ -222,8 +194,8 @@ location /pipewave/ {
    ```go
    WorkerPool: pipewave.WorkerPoolConfig{
        Buffer:         512,   // Increase for high throughput
-       UpperThreshold: 1000,  // Scale up threshold
-       LowerThreshold: 100,   // Scale down threshold
+       UpperThreshold: 1000,  // When the worker pool reaches this level, mark the module as unhealthy to stop accepting new requests
+       LowerThreshold: 100,   // When the worker pool drops to this level, mark the module as healthy again
    },
    ```
 

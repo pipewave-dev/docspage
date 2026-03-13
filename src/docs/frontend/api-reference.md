@@ -20,7 +20,6 @@ const config = new PipewaveModuleConfig(options)
 |----------|------|----------|---------|-------------|
 | `backendEndpoint` | `string` | Yes | — | Backend endpoint without protocol (e.g., `"api.example.com/pipewave"`) |
 | `insecure` | `boolean` | No | `false` | Use `ws://` instead of `wss://`. Set `true` for local development |
-| `debugMode` | `boolean` | No | `false` | Enable debug logging to browser console |
 | `getAccessToken` | `() => Promise<string>` | No | — | Async function returning the access token. Called before each connection attempt |
 
 ---

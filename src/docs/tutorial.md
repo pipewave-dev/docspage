@@ -279,7 +279,6 @@ export default function App() {
     const config = new PipewaveModuleConfig({
         backendEndpoint: 'localhost:8080/pipewave',
         insecure: true,
-        debugMode: true,
         getAccessToken: async () => `user:${username}`,
     })
 

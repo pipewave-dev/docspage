@@ -34,9 +34,6 @@ const config = new PipewaveModuleConfig({
     // Use ws:// instead of wss:// (default: false)
     insecure: false,
 
-    // Enable debug logging (default: false)
-    debugMode: process.env.NODE_ENV !== 'production',
-
     // Async function to retrieve the current access token
     // Called before each connection/reconnection attempt
     getAccessToken: async () => {

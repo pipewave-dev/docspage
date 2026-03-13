@@ -20,7 +20,6 @@ import { PipewaveProvider, PipewaveModuleConfig } from '@pipewave/reactpkg'
 const config = new PipewaveModuleConfig({
     backendEndpoint: 'localhost:8080/websocket',
     insecure: true,
-    debugMode: process.env.NODE_ENV !== 'production',
     getAccessToken: async () => {
         return localStorage.getItem("auth_token") || ""
     },
