@@ -68,7 +68,7 @@ func (h *handleMsg) HandleMessage(ctx context.Context, auth pipewave.Auth, msgTy
 
 const frontendCode = `import { PipewaveProvider, PipewaveModuleConfig } from '@pipewave/react'
 import { usePipewave } from '@pipewave/react/hooks'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 // 1. Configure the provider
 const config = new PipewaveModuleConfig({
@@ -88,14 +88,12 @@ export function App() {
 function ChatRoom() {
     const [messages, setMessages] = useState<string[]>([])
 
-    const handlers = useMemo(() => ({
+    const { status, send } = usePipewave({
         CHAT_MESSAGE: async (data: Uint8Array) => {
             const msg = new TextDecoder().decode(data)
             setMessages(prev => [...prev, msg])
         },
-    }), [])
-
-    const { status, send } = usePipewave(handlers)
+    })
 
     return (
         <div>

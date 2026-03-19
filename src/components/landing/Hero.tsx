@@ -224,8 +224,7 @@ export default function Hero() {
                     <span>
                       <span className="text-purple-400">const</span>{" "}
                       <span className="text-primary-300">handlers</span> ={" "}
-                      <span className="text-yellow-300">useMemo</span>(() =&gt;
-                      ({"{"}
+                      {"{"}
                     </span>
                   </div>
                   <div className="flex gap-3">
@@ -250,7 +249,7 @@ export default function Hero() {
                     <span className="text-slate-600 select-none w-4 text-right shrink-0">
                       4
                     </span>
-                    <span>{"}"}), [])</span>
+                    <span>{"}"}</span>
                   </div>
                   <div className="h-2" />
                   <div className="flex gap-3">

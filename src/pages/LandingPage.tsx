@@ -4,6 +4,7 @@ import HowItWorks from '@/components/landing/HowItWorks'
 import CodePreview from '@/components/landing/CodePreview'
 import Architecture from '@/components/landing/Architecture'
 import Roadmap from '@/components/landing/Roadmap'
+import SupportUs from '@/components/landing/SupportUs'
 
 export default function LandingPage() {
   return (
@@ -14,6 +15,7 @@ export default function LandingPage() {
       <CodePreview />
       <Architecture />
       <Roadmap />
+      <SupportUs />
     </>
   )
 }

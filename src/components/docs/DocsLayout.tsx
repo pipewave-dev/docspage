@@ -47,7 +47,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
 
         {/* Desktop sidebar */}
         <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="sticky top-24">
+          <div className="sticky top-24 h-[calc(100vh-7rem)] overflow-y-auto">
             <DocsSidebar />
           </div>
         </aside>

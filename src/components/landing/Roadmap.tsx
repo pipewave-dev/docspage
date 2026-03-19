@@ -28,8 +28,15 @@ const roadmapItems = [
   },
   {
     status: "soon",
-    title: "Multi-Language API",
-    description: "Expose Pipewave services beyond Go — Python, Node.js, etc.",
+    title: "Sidecar Proxy & Multi-Language Adapter",
+    description:
+      "Proxy server acting as a sidecar that converts WebSocket connections into HTTP request adapters — enabling Python, Node.js, and other languages to integrate without native WebSocket support",
+  },
+  {
+    status: "soon",
+    title: "Flutter & Mobile SDK",
+    description:
+      "First-class Flutter support for mobile applications — native Dart client with multiplexed channels, reconnection logic, and real-time state binding",
   },
   {
     status: "soon",

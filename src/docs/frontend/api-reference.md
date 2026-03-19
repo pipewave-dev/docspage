@@ -21,6 +21,16 @@ const config = new PipewaveModuleConfig(options)
 | `backendEndpoint` | `string` | Yes | — | Backend endpoint without protocol (e.g., `"api.example.com/pipewave"`) |
 | `insecure` | `boolean` | No | `false` | Use `ws://` instead of `wss://`. Set `true` for local development |
 | `getAccessToken` | `() => Promise<string>` | No | — | Async function returning the access token. Called before each connection attempt |
+| `enableLongPollingFallback` | `boolean` | No | `true` | Automatically fall back to Long Polling when WebSocket fails |
+| `heartbeatInterval` | `number` (ms) | No | `30000` | Heartbeat ping interval |
+| `retry` | `RetryConfig` | No | `DEFAULT_RETRY_CONFIG` | Reconnect retry settings |
+
+### DEFAULT_RETRY_CONFIG
+
+```ts
+import { DEFAULT_RETRY_CONFIG } from '@pipewave/reactpkg'
+// { maxRetry: 3, initialRetryDelay: 1000, maxRetryDelay: 5000 }
+```
 
 ---
 
@@ -47,10 +57,13 @@ import { PipewaveProvider } from '@pipewave/reactpkg'
 Global event callbacks for connection lifecycle.
 
 ```tsx
-interface EventHandler {
+interface WebsocketEventHandler {
     onOpen?: () => Promise<void>
     onClose?: () => Promise<void>
     onError?: (error: Event) => Promise<void>
+    onReconnect?: (attempt: number) => Promise<void>
+    onTransportChange?: (transport: 'ws' | 'lp') => Promise<void>
+    onStatusChange?: (status: string) => Promise<void>
 }
 ```
 
@@ -59,6 +72,9 @@ interface EventHandler {
 | `onOpen` | `async () => void` | Called when WebSocket connection is established |
 | `onClose` | `async () => void` | Called when WebSocket connection is closed |
 | `onError` | `async (error: Event) => void` | Called when a WebSocket error occurs |
+| `onReconnect` | `async (attempt: number) => void` | Called on each reconnect attempt with the attempt number |
+| `onTransportChange` | `async (transport: 'ws' \| 'lp') => void` | Called when transport switches between WebSocket and Long Polling |
+| `onStatusChange` | `async (status: string) => void` | Called whenever connection status changes |
 
 ---
 
@@ -90,7 +106,6 @@ const { status, send, resetRetryCount } = usePipewave(onMessage)
 
 ## OnMessage
 
-Handler map type for incoming messages. **Must be memoized with `useMemo`.**
 
 ```tsx
 import { type OnMessage } from '@pipewave/reactpkg'
@@ -164,6 +179,7 @@ interface WebsocketResponse {
     t: string      // Message Type
     e: Uint8Array  // Error payload (empty if no error)
     b: Uint8Array  // Binary payload (your data)
+    a?: string     // ACK ID (present only when server requests acknowledgment)
 }
 ```
 
@@ -173,8 +189,9 @@ interface WebsocketResponse {
 | `t` | `"t"` | `string` | Message type for routing |
 | `e` | `"e"` | `Uint8Array` | Error payload (if the server returned an error) |
 | `b` | `"b"` | `Uint8Array` | Binary payload — this is what you `decode()` in handlers |
+| `a` | `"a"` | `string` | ACK ID — when present, the server expects an acknowledgment response |
 
-> You rarely interact with the frame directly. The SDK extracts the `b` field and passes it as `data` to your `onMessage` handlers, and the `t` field is used to route to the correct handler.
+> You rarely interact with the frame directly. The SDK extracts the `b` field and passes it as `data` to your `onMessage` handlers, and the `t` field is used to route to the correct handler. The `usePipewaveSendWaitAck` hook handles ACK automatically.
 
 ---
 
@@ -183,16 +200,97 @@ interface WebsocketResponse {
 | Status | Description |
 |--------|-------------|
 | `'READY'` | WebSocket connected and ready to send/receive |
-| `'SUSPEND'` | Connection lost, using Long Polling fallback or waiting for retry |
+| `'RECONNECTING'` | Attempting to reconnect after connection loss |
+| `'SUSPEND'` | Max retries exhausted, connection suspended |
 
 ### Status-Based UI Pattern
 
 ```tsx
-const { status, resetRetryCount } = usePipewave(onMessage)
+const { status, isConnected, isReconnecting, isSuspended } = usePipewaveStatus()
 
 // Disable send button when not ready
-<button disabled={status !== 'READY'}>Send</button>
+<button disabled={!isConnected}>Send</button>
+
+// Show reconnecting indicator
+{isReconnecting && <span>Reconnecting...</span>}
 
 // Show retry button when suspended
-{status === 'SUSPEND' && <button onClick={resetRetryCount}>Retry</button>}
+{isSuspended && <button onClick={resetRetryCount}>Retry</button>}
 ```
+
+---
+
+## Specialized Hooks
+
+In addition to `usePipewave`, the SDK provides focused single-responsibility hooks. See the [Hooks Reference](/docs/frontend/hooks) for full documentation.
+
+| Hook | Purpose |
+|------|---------|
+| `usePipewaveStatus` | Connection status with `isConnected`, `isReconnecting`, `isSuspended` |
+| `usePipewaveSend` | Send messages without subscribing |
+| `usePipewaveMessage` | Subscribe to a single message type |
+| `usePipewaveError` | Subscribe to error messages by type |
+| `usePipewaveResetConnection` | Manage connection lifecycle and reset |
+| `usePipewaveLatestMessage<T>` | Get the most recent decoded message of a type |
+| `usePipewaveMessageHistory<T>` | Accumulate message history with a size limit |
+| `usePipewaveSendWaitAck` | Send a message and await server acknowledgment |
+| `usePipewaveConnectionInfo` | Connection details including active transport |
+| `useDebugLogger` | Log all WebSocket events to console |
+
+---
+
+## PipewaveErrorBoundary
+
+React Error Boundary that catches render errors in the component tree.
+
+```tsx
+import { PipewaveErrorBoundary } from '@pipewave/reactpkg'
+
+<PipewaveErrorBoundary fallback={<div>Connection error occurred</div>}>
+    <MyApp />
+</PipewaveErrorBoundary>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `fallback` | `ReactNode` | UI displayed when an error is caught |
+| `children` | `ReactNode` | Protected component subtree |
+
+---
+
+## Schema System
+
+### createPipewaveSchema
+
+Create a centralized, type-safe codec registry for all message types:
+
+```ts
+import { createPipewaveSchema } from '@pipewave/reactpkg'
+
+const schema = createPipewaveSchema({
+    CHAT_MSG: {
+        encode: (msg: ChatMessage) => ChatMessage.encode(msg).finish(),
+        decode: (bytes: Uint8Array) => ChatMessage.decode(bytes),
+    },
+    USER_STATUS: {
+        encode: (s: UserStatus) => UserStatus.encode(s).finish(),
+        decode: (bytes: Uint8Array) => UserStatus.decode(bytes),
+    },
+})
+
+// Use with hooks
+const latest = usePipewaveLatestMessage('CHAT_MSG', {
+    decode: schema.CHAT_MSG.decode,
+})
+```
+
+### MessageCodec&lt;T&gt;
+
+```ts
+interface MessageCodec<T> {
+    encode: (data: T) => Uint8Array
+    decode: (bytes: Uint8Array) => T
+}
+```
+
+Centralizes encode/decode definitions to avoid scattering them across the codebase.

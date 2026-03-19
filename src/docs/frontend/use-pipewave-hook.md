@@ -9,10 +9,9 @@ The `usePipewave` hook is the primary interface for interacting with Pipewave in
 ```tsx
 import { usePipewave, type OnMessage } from '@pipewave/reactpkg'
 import { decode } from '@msgpack/msgpack'
-import { useMemo } from 'react'
 
 function MyComponent() {
-    const onMessage: OnMessage = useMemo(() => ({
+    const { status, send } = usePipewave({
         CHAT_INCOMING_MSG: async (data: Uint8Array, id: string) => {
             const payload = decode(data) as ChatIncomingMsg
             // Handle incoming message
@@ -20,9 +19,7 @@ function MyComponent() {
         CHAT_ACK: async (_: Uint8Array, id: string) => {
             // Handle acknowledgment
         },
-    }), [])
-
-    const { status, send, resetRetryCount } = usePipewave(onMessage)
+    })
 }
 ```
 
@@ -31,10 +28,10 @@ function MyComponent() {
 Handlers are registered as a key-value map where **keys are message type strings** and **values are async handler functions**:
 
 ```tsx
-type OnMessage = Record<string, (data: Uint8Array, messageId: string) => Promise<void>>
+type OnMessage = Record<string, (data: Uint8Array, id: string) => Promise<void>>
+type OnError   = Record<string, (data: string,    id: string) => Promise<void>>
 ```
 
-> **Critical:** Always memoize your handlers with `useMemo`. Without memoization, handlers will re-register on every render, causing performance issues.
 
 ## Return Values
 
@@ -42,7 +39,8 @@ type OnMessage = Record<string, (data: Uint8Array, messageId: string) => Promise
 |----------|------|-------------|
 | `status` | `string` | Connection status: `'READY'`, `'SUSPEND'`, etc. |
 | `send` | `function` | Send a message to the backend |
-| `resetRetryCount` | `function` | Reset the retry counter and attempt reconnection |
+| `resetRetryCount` | `function` | Reset the retry counter |
+| `reconnect` | `function` | Manually trigger a reconnection |
 
 ## Sending Messages
 
@@ -51,7 +49,9 @@ Use MessagePack encoding for efficient binary data:
 ```tsx
 import { encode } from '@msgpack/msgpack'
 
-const { send, status } = usePipewave(onMessage)
+const { send, status } = usePipewave({
+    CHAT_INCOMING_MSG: async (data, id) => { /* ... */ },
+})
 
 const sendMessage = () => {
     send({
@@ -85,7 +85,7 @@ Use the `status` value to show connection state in your UI:
 
 ```tsx
 function StatusIndicator() {
-    const { status, resetRetryCount } = usePipewave(useMemo(() => ({}), []))
+    const { status, resetRetryCount } = usePipewave()
 
     return (
         <div>
@@ -106,10 +106,25 @@ You can use `usePipewave` in multiple components simultaneously. Each component 
 
 ```tsx
 // Component A subscribes to CHAT_INCOMING_MSG
-usePipewave(useMemo(() => ({ CHAT_INCOMING_MSG: handleChatA }), []))
+usePipewave({ CHAT_INCOMING_MSG: handleChatA })
 
 // Component B also subscribes to CHAT_INCOMING_MSG
-usePipewave(useMemo(() => ({ CHAT_INCOMING_MSG: handleChatB }), []))
+usePipewave({ CHAT_INCOMING_MSG: handleChatB })
 
 // Both handleChatA and handleChatB will fire when a CHAT_INCOMING_MSG arrives
 ```
+
+---
+
+## Specialized Hooks
+
+For new code, **prefer the specialized hooks** over `usePipewave`. Each hook targets a single concern, giving you finer-grained control over exactly the behavior you need:
+
+| Hook | What it replaces in `usePipewave` |
+|------|----------------------------------|
+| `usePipewaveStatus` | `status` field |
+| `usePipewaveSend` | `send` function |
+| `usePipewaveMessage` | Message handler registration |
+| `usePipewaveResetConnection` | `resetRetryCount` function |
+
+See the full [Hooks Reference](/docs/frontend/hooks) for all available hooks.
