@@ -73,7 +73,6 @@ func main() {
         ConfigStore: configprovider.FromGoStruct(pipewave.ConfigEnv{
             Env:     "development",
             PodName: "local-1",
-            Version: "0.1.0",
             WorkerPool: pipewave.WorkerPoolConfig{
                 Buffer: 256,
             },
@@ -252,7 +251,7 @@ npm install @pipewave/reactpkg @msgpack/msgpack
 Replace `src/App.tsx`:
 
 ```tsx
-import { PipewaveProvider, PipewaveModuleConfig } from '@pipewave/reactpkg'
+import { PipewaveProvider, PipewaveModuleConfig, PipewaveDebugger } from '@pipewave/reactpkg'
 import { ChatRoom } from './ChatRoom'
 import { useState } from 'react'
 
@@ -292,6 +291,7 @@ export default function App() {
             }}
         >
             <ChatRoom username={username} />
+            {import.meta.env.DEV && <PipewaveDebugger />}
         </PipewaveProvider>
     )
 }
@@ -302,9 +302,14 @@ export default function App() {
 Create `src/ChatRoom.tsx`:
 
 ```tsx
-import { usePipewave, type OnMessage } from '@pipewave/reactpkg'
+import {
+    usePipewaveMessage,
+    usePipewaveSend,
+    usePipewaveStatus,
+    usePipewaveResetConnection,
+} from '@pipewave/reactpkg'
 import { encode, decode } from '@msgpack/msgpack'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 interface Message {
     from: string
@@ -317,29 +322,31 @@ export function ChatRoom({ username }: { username: string }) {
     const [input, setInput] = useState('')
     const [targetUser, setTargetUser] = useState('')
 
-    const onMessage: OnMessage = useMemo(() => ({
-        CHAT_INCOMING: async (data: Uint8Array) => {
-            const payload = decode(data) as {
-                from_user_id: string
-                content: string
-                timestamp: number
-            }
-            setMessages(prev => [...prev, {
-                from: payload.from_user_id,
-                content: payload.content,
-                timestamp: payload.timestamp,
-            }])
-        },
-        CHAT_ACK: async () => {
-            console.log('Message delivered')
-        },
-        CHAT_ERROR: async (data: Uint8Array) => {
-            const payload = decode(data) as { reason: string }
-            console.error('Chat error:', payload.reason)
-        },
-    }), [])
+    usePipewaveMessage('CHAT_INCOMING', async (data: Uint8Array) => {
+        const payload = decode(data) as {
+            from_user_id: string
+            content: string
+            timestamp: number
+        }
+        setMessages(prev => [...prev, {
+            from: payload.from_user_id,
+            content: payload.content,
+            timestamp: payload.timestamp,
+        }])
+    })
 
-    const { status, send, resetRetryCount } = usePipewave(onMessage)
+    usePipewaveMessage('CHAT_ACK', async () => {
+        console.log('Message delivered')
+    })
+
+    usePipewaveMessage('CHAT_ERROR', async (data: Uint8Array) => {
+        const payload = decode(data) as { reason: string }
+        console.error('Chat error:', payload.reason)
+    })
+
+    const { send } = usePipewaveSend()
+    const { status, isSuspended } = usePipewaveStatus()
+    const { resetRetryCount } = usePipewaveResetConnection()
 
     const sendMessage = () => {
         if (!input || !targetUser) return
@@ -365,7 +372,7 @@ export function ChatRoom({ username }: { username: string }) {
                 <strong style={{ color: status === 'READY' ? 'green' : 'red' }}>
                     {status}
                 </strong>
-                {status === 'SUSPEND' && (
+                {isSuspended && (
                     <button onClick={resetRetryCount} style={{ marginLeft: 8 }}>
                         Retry Connection
                     </button>

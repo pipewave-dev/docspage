@@ -12,13 +12,13 @@ export default function Navbar() {
   // Ctrl+K / Cmd+K shortcut
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         setSearchOpen(true);
       }
     }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return (
@@ -40,7 +40,7 @@ export default function Navbar() {
           </div>
           <span className="text-lg font-bold text-white">Pipewave</span>
           <span className="rounded border border-slate-700 px-1.5 py-0.5 text-xs font-medium text-slate-500">
-            v0.1.0
+            v0.1.1
           </span>
         </Link>
 
@@ -81,7 +81,10 @@ export default function Navbar() {
             </svg>
             <span>Search docs...</span>
             <kbd className="ml-1 rounded border border-slate-600 px-1 py-0.5 text-xs text-slate-500">
-              {typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl+K'}
+              {typeof navigator !== "undefined" &&
+              /Mac|iPhone|iPad/.test(navigator.platform)
+                ? "⌘K"
+                : "Ctrl+K"}
             </kbd>
           </button>
 

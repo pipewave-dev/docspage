@@ -43,6 +43,7 @@ http.Handle("/pipewave/", pw.Mux())`,
 
 <PipewaveProvider config={config}>
   <App />
+  {import.meta.env.DEV && <PipewaveDebugger />}
 </PipewaveProvider>`,
     lang: "TSX",
   },
@@ -50,15 +51,14 @@ http.Handle("/pipewave/", pw.Mux())`,
     step: "03",
     title: "Subscribe Events",
     description:
-      "Use usePipewave() hook with an OnMessage map to handle typed binary messages.",
-    code: `const onMessage: OnMessage = useMemo(() => ({
-  CHAT_INCOMING_MSG: async (data: Uint8Array, id) => {
-    const msg = decode(data) as ChatPayload
-    addMessage(msg)
-  },
-}), [])
+      "Use specialized hooks to subscribe to typed binary messages and send data.",
+    code: `usePipewaveMessage('CHAT_INCOMING_MSG', async (data: Uint8Array) => {
+  const msg = decode(data) as ChatPayload
+  addMessage(msg)
+})
 
-const { status, send } = usePipewave(onMessage)`,
+const { send } = usePipewaveSend()
+const { status } = usePipewaveStatus()`,
     lang: "TSX",
   },
   {

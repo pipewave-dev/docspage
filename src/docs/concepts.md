@@ -42,9 +42,17 @@ A function that takes a token string and returns the user identity. This is your
 
 ```go
 // Your auth logic — validate JWT, check API key, query database, etc.
-func inspectToken(ctx context.Context, token string) (userID string, isAnonymous bool, err error) {
-    claims, err := validateJWT(token)
-    return claims.UserID, false, err
+func inspectToken(ctx context.Context,
+	token string,
+    headers http.Header,
+) (
+	username string,
+	isAnonymous bool,
+	metadata map[string]string,
+	err error) {
+    // You can call your authentication service here
+	claims, err := validateJWT(token)
+	return claims.UserID, false, nil, err
 }
 ```
 
@@ -53,26 +61,31 @@ func inspectToken(ctx context.Context, token string) (userID string, isAnonymous
 An interface that receives typed messages and your business logic decides how to respond.
 
 ```go
-func (h *handler) HandleMessage(ctx context.Context, auth voAuth.WebsocketAuth,
-    inputType string, data []byte) (outputType string, res []byte, err error) {
-    // inputType tells you WHAT the client wants (e.g., "CHAT_SEND_MSG")
-    // data contains the payload
-    // Return a response type + data, or "" for no response
+func (h *handler) HandleMessage(ctx context.Context,
+	auth voAuth.WebsocketAuth,
+	inputType string,
+	data []byte,
+) (
+	outputType string,
+	res []byte, err error) {
+	// inputType tells you WHAT the client wants (e.g., "CHAT_SEND_MSG")
+	// data contains the payload
+	// Return a response type + data, or "" for no response
 }
 ```
 
 ### 3. OnMessage handlers — "What happens when a message arrives on the client?"
 
-A map of message types to handler functions in React.
+Use `usePipewaveMessage` to subscribe to a specific message type in any React component:
 
 ```tsx
-const onMessage: OnMessage = useMemo(() => ({
-    CHAT_INCOMING_MSG: async (data: Uint8Array, id: string) => {
-        const msg = decode(data) as ChatPayload
-        addMessage(msg)
-    },
-}), [])
+usePipewaveMessage('CHAT_INCOMING_MSG', async (data: Uint8Array, id: string) => {
+    const msg = decode(data) as ChatPayload
+    addMessage(msg)
+})
 ```
+
+No memoization required — the handler is stabilized internally. See [Hooks Reference](/docs/frontend/hooks) for all available hooks.
 
 ## Key Design Decisions
 
@@ -105,9 +118,9 @@ For a single instance, the flow is straightforward. For production with multiple
 
 ```
 Clients ──► Load Balancer ──► Pipewave Instance 1 ──┐
-                          ──► Pipewave Instance 2 ──┤──► PubSub (Valkey/Redis)
-                          ──► Pipewave Instance 3 ──┘
-                                                         │
+                      │─────► Pipewave Instance 2 ──┤──► PubSub (Valkey/Redis)
+                      └─────► Pipewave Instance 3 ──┘     │
+                                                          │
                                                     Connection Store
                                                    (Postgres/DynamoDB)
 ```
@@ -120,6 +133,6 @@ Read the full [Architecture & Performance](/docs/architecture) guide for deep te
 
 ## What's Next
 
-- Follow the [Tutorial](/docs/tutorial) to build a complete chat app
+- Follow the [Tutorial](/docs/tutorial) to build a complete echo app
 - Set up your [Backend](/docs/backend/quick-start) in 5 minutes
 - Set up your [Frontend](/docs/frontend/quick-start) in 5 minutes

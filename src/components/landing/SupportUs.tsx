@@ -28,43 +28,43 @@ const REPOS = [
   },
 ];
 
-const DONATION_LINKS: {
-  label: string;
-  shortLabel: string;
-  icon: string;
-  colorClass: string;
-  borderClass: string;
-  bgClass: string;
-  href?: string;
-}[] = [
-  {
-    label: "GitHub Sponsors",
-    shortLabel: "GH Sponsors",
-    icon: "💜",
-    colorClass: "text-violet-400",
-    borderClass: "border-violet-500/30",
-    bgClass: "bg-violet-500/10",
-    // href: "https://github.com/sponsors/{username}",
-  },
-  {
-    label: "Support on Ko-fi",
-    shortLabel: "Ko-fi",
-    icon: "♥",
-    colorClass: "text-[#ff5e5b]",
-    borderClass: "border-[#ff5e5b]/30",
-    bgClass: "bg-[#ff5e5b]/10",
-    href: "https://ko-fi.com/yunerou",
-  },
-  {
-    label: "Buy Me a Coffee",
-    shortLabel: "Buy a Coffee",
-    icon: "☕",
-    colorClass: "text-[#ffdd00]",
-    borderClass: "border-[#ffdd00]/30",
-    bgClass: "bg-[#ffdd00]/10",
-    // href: "https://www.buymeacoffee.com/{username}",
-  },
-];
+// const DONATION_LINKS: {
+//   label: string;
+//   shortLabel: string;
+//   icon: string;
+//   colorClass: string;
+//   borderClass: string;
+//   bgClass: string;
+//   href?: string;
+// }[] = [
+//   {
+//     label: "GitHub Sponsors",
+//     shortLabel: "GH Sponsors",
+//     icon: "💜",
+//     colorClass: "text-violet-400",
+//     borderClass: "border-violet-500/30",
+//     bgClass: "bg-violet-500/10",
+//     // href: "https://github.com/sponsors/{username}",
+//   },
+//   {
+//     label: "Support on Ko-fi",
+//     shortLabel: "Ko-fi",
+//     icon: "♥",
+//     colorClass: "text-[#ff5e5b]",
+//     borderClass: "border-[#ff5e5b]/30",
+//     bgClass: "bg-[#ff5e5b]/10",
+//     href: "https://ko-fi.com/yunerou",
+//   },
+//   {
+//     label: "Buy Me a Coffee",
+//     shortLabel: "Buy a Coffee",
+//     icon: "☕",
+//     colorClass: "text-[#ffdd00]",
+//     borderClass: "border-[#ffdd00]/30",
+//     bgClass: "bg-[#ffdd00]/10",
+//     // href: "https://www.buymeacoffee.com/{username}",
+//   },
+// ];
 
 const CACHE_TTL = 3_600_000; // 1 hour
 
@@ -133,15 +133,13 @@ export default function SupportUs() {
             Love Pipewave?
           </h2>
           <p className="mt-4 text-lg text-slate-400">
-            A ⭐ on GitHub helps others find the project. A coffee keeps the
-            maintainer going.
+            A ⭐ on GitHub helps others find the project.
           </p>
         </motion.div>
-
-        <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="mt-16 flex justify-center">
           {/* GitHub Star card */}
           <motion.div
-            className="rounded-xl border border-slate-800/60 bg-slate-900/30 p-6"
+            className="w-full max-w-md rounded-xl border border-slate-800/60 bg-slate-900/30 p-6"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -191,10 +189,10 @@ export default function SupportUs() {
               View pipewave-dev on GitHub
             </a>
           </motion.div>
-
-          {/* Donation card */}
+        </div>
+        {/* <div className="mt-8 flex justify-center">
           <motion.div
-            className="rounded-xl border border-slate-800/60 bg-slate-900/30 p-6"
+            className="w-full max-w-md rounded-xl border border-slate-800/60 bg-slate-900/30 p-6"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -239,7 +237,7 @@ export default function SupportUs() {
               </div>
             </div>
           </motion.div>
-        </div>
+        </div> */}
       </div>
     </section>
   );

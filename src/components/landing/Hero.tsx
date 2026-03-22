@@ -222,46 +222,40 @@ export default function Hero() {
                       1
                     </span>
                     <span>
-                      <span className="text-purple-400">const</span>{" "}
-                      <span className="text-primary-300">handlers</span> ={" "}
-                      {"{"}
+                      <span className="text-yellow-300">usePipewaveMessage</span>
+                      (<span className="text-green-300">'CHAT_MESSAGE'</span>,{" "}
+                      <span className="text-orange-300">handleChat</span>)
                     </span>
                   </div>
                   <div className="flex gap-3">
                     <span className="text-slate-600 select-none w-4 text-right shrink-0">
                       2
                     </span>
-                    <span className="pl-4">
-                      <span className="text-primary-300">CHAT_MESSAGE</span>:{" "}
-                      <span className="text-yellow-300">handleChat</span>,
+                    <span>
+                      <span className="text-yellow-300">usePipewaveMessage</span>
+                      (<span className="text-green-300">'NOTIFICATION'</span>,{" "}
+                      <span className="text-orange-300">showToast</span>)
                     </span>
                   </div>
+                  <div className="h-2" />
                   <div className="flex gap-3">
                     <span className="text-slate-600 select-none w-4 text-right shrink-0">
                       3
                     </span>
-                    <span className="pl-4">
-                      <span className="text-primary-300">NOTIFICATION</span>:{" "}
-                      <span className="text-yellow-300">showToast</span>,
+                    <span>
+                      <span className="text-purple-400">const</span> {"{"}{" "}
+                      <span className="text-primary-300">send</span> {"}"} ={" "}
+                      <span className="text-yellow-300">usePipewaveSend</span>()
                     </span>
                   </div>
                   <div className="flex gap-3">
                     <span className="text-slate-600 select-none w-4 text-right shrink-0">
                       4
                     </span>
-                    <span>{"}"}</span>
-                  </div>
-                  <div className="h-2" />
-                  <div className="flex gap-3">
-                    <span className="text-slate-600 select-none w-4 text-right shrink-0">
-                      5
-                    </span>
                     <span>
                       <span className="text-purple-400">const</span> {"{"}{" "}
-                      <span className="text-primary-300">send</span>,{" "}
                       <span className="text-primary-300">status</span> {"}"} ={" "}
-                      <span className="text-yellow-300">usePipewave</span>
-                      (handlers)
+                      <span className="text-yellow-300">usePipewaveStatus</span>()
                     </span>
                   </div>
                 </div>

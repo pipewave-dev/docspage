@@ -8,7 +8,7 @@ Pipewave is a high-performance WebSocket & Long-Polling engine designed for mode
 |-------------|---------|-------|
 | **Go** | 1.21+ | Backend runtime |
 | **Node.js** | 18+ | Frontend build toolchain |
-| **React** | 18+ or 19 | Frontend framework |
+| **React** | 19 | Frontend framework |
 | **TypeScript** | 5.0+ | Recommended, not required |
 | **Valkey / Redis** | 7.0+ | PubSub for multi-instance (optional for single instance) |
 | **PostgreSQL** | 14+ | Connection store (or DynamoDB via adapter) |
@@ -20,7 +20,7 @@ Pipewave is a high-performance WebSocket & Long-Polling engine designed for mode
 - **Horizontally Scalable** — No sticky sessions. Built-in PubSub broadcast across multiple instances
 - **High Performance** — Binary framing with MessagePack, kernel-level socket management (kqueue/epoll)
 - **Automatic Resilience** — Built-in heartbeat, auto-reconnect, and Long Polling fallback
-- **React First-Class** — `usePipewave()` hook with reactive status and typed event handlers
+- **React First-Class** — hooks with reactive status and typed event handlers
 
 ### How Does Pipewave Compare?
 
@@ -59,23 +59,22 @@ http.ListenAndServe(":8080", pw.Mux())
 ### Frontend (React)
 
 ```tsx
-const onMessage: OnMessage = useMemo(() => ({
-    CHAT_INCOMING_MSG: async (data: Uint8Array, id: string) => {
-        const payload = decode(data) as ChatIncomingMsg
-        // handle message...
-    },
-}), [])
+usePipewaveMessage('CHAT_INCOMING_MSG', async (data: Uint8Array) => {
+    const payload = decode(data) as ChatIncomingMsg
+    // handle message...
+})
 
-const { status, send, resetRetryCount } = usePipewave(onMessage)
+const { send } = usePipewaveSend()
+const { status, isSuspended } = usePipewaveStatus()
 ```
 
 ## Resources
 
 | | Link | Version |
 |---|---|---|
-| **Backend (Go)** | [github.com/pipewave-dev/go-pkg](https://github.com/pipewave-dev/go-pkg) | `v0.1.0` |
-| **Frontend (React)** | [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg) | `v0.1.0` |
-| **npm package** | [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) | `v0.1.0` |
+| **Backend (Go)** | [github.com/pipewave-dev/go-pkg](https://github.com/pipewave-dev/go-pkg) | `v0.1.1` |
+| **Frontend (React)** | [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg) | `v0.1.3` |
+| **npm package** | [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) | `v0.1.3` |
 | **Examples** | [github.com/pipewave-dev/example](https://github.com/pipewave-dev/example) | — |
 
 ## Next Steps

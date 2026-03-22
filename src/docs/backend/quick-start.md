@@ -33,8 +33,8 @@ func main() {
     })
 
     pw.SetFns(&pipewave.FunctionStore{
-        InspectToken: func(ctx context.Context, token string) (userID string, isAnonymous bool, err error) {
-            return parseToken(token), false, nil
+        InspectToken: func(ctx context.Context, token string, headers http.Header) (userID string, isAnonymous bool, metadata map[string]string, err error) {
+            return parseToken(token), false, nil, nil
         },
         HandleMessage:     &myHandler{i: pw},
         OnNewConnection:   nil,
@@ -59,7 +59,6 @@ func getConfig() configprovider.ConfigStore {
         pipewave.ConfigEnv{
             Env:     "my-app",
             PodName: "pod-1",
-            Version: "0.0.1",
             WorkerPool: configprovider.WorkerPoolT{
                 Buffer:         100,
                 UpperThreshold: 80,

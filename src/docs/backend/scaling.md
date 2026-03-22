@@ -27,51 +27,6 @@ Pipewave is designed for horizontal scalability from the ground up. No sticky se
                     └──────────────┘
 ```
 
-## Kubernetes Deployment
-
-Pipewave works naturally in Kubernetes without any special configuration:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pipewave
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: pipewave
-  template:
-    metadata:
-      labels:
-        app: pipewave
-    spec:
-      containers:
-        - name: pipewave
-          image: your-registry/your-app:latest
-          ports:
-            - containerPort: 8080
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: pipewave
-spec:
-  type: ClusterIP
-  ports:
-    - port: 8080
-      targetPort: 8080
-  selector:
-    app: pipewave
-```
-
 ## Key Points
 
 - **No sticky sessions** — Any instance can handle any connection. The PubSub layer ensures cross-instance delivery

@@ -19,7 +19,7 @@ type HandleMessage interface {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `ctx` | `context.Context` | Request context |
-| `auth` | `voAuth.WebsocketAuth` | Authenticated user info (contains `UserID` from `InspectToken`) |
+| `auth` | `voAuth.WebsocketAuth` | Authenticated user info (contains `UserID` and optional `Metadata` from `InspectToken`) |
 | `inputType` | `string` | The message type identifier sent by the client |
 | `data` | `[]byte` | The binary payload (typically MessagePack-encoded) |
 

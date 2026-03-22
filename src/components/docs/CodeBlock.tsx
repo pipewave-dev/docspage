@@ -54,7 +54,7 @@ export default function CodeBlock({ code, language, className = '' }: CodeBlockP
 
       {/* Code content */}
       <div
-        className="overflow-x-auto p-4 text-sm [&_pre]:!bg-transparent [&_pre]:!p-0"
+        className="max-h-[480px] overflow-x-auto overflow-y-auto p-4 text-sm [&_pre]:!bg-transparent [&_pre]:!p-0"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>

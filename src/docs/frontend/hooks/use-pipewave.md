@@ -4,6 +4,8 @@ The `usePipewave` hook is the primary interface for interacting with Pipewave in
 
 > npm: [@pipewave/reactpkg](https://www.npmjs.com/package/@pipewave/reactpkg) · Source: [github.com/pipewave-dev/reactpkg](https://github.com/pipewave-dev/reactpkg)
 
+> ⚠️ **Discouraged.** Prefer the specialized hooks (`usePipewaveStatus`, `usePipewaveSend`, `usePipewaveMessage`, etc.) over `usePipewave` to reduce coupling and improve code clarity. See the full list at [Hooks Reference](/docs/frontend/hooks).
+
 ## Basic Usage
 
 ```tsx

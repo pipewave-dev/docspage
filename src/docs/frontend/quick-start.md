@@ -15,7 +15,7 @@ npm install @pipewave/reactpkg @msgpack/msgpack
 Wrap your application with `PipewaveProvider`:
 
 ```tsx
-import { PipewaveProvider, PipewaveModuleConfig } from '@pipewave/reactpkg'
+import { PipewaveProvider, PipewaveModuleConfig, PipewaveDebugger } from '@pipewave/reactpkg'
 
 const config = new PipewaveModuleConfig({
     backendEndpoint: 'localhost:8080/websocket',
@@ -35,31 +35,39 @@ export default function App() {
     return (
         <PipewaveProvider config={config} eventHandler={eventHandler}>
             <YourApplication />
+            {import.meta.env.DEV && <PipewaveDebugger />}
         </PipewaveProvider>
     )
 }
 ```
 
-## Use the Hook
+> **Tip:** `PipewaveDebugger` is a visual WebSocket debugging panel — recommended for development environments only. It renders a floating badge (bottom-left) that opens a real-time event log. See [PipewaveDebugger](/docs/frontend/pipewave-debugger) for details.
 
-In any component, use `usePipewave` to subscribe to events and send messages:
+## Use the Hooks
+
+In any component, use the specialized hooks to subscribe to events and send messages:
 
 ```tsx
-import { usePipewave, type OnMessage } from '@pipewave/reactpkg'
+import {
+    usePipewaveMessage,
+    usePipewaveSend,
+    usePipewaveStatus,
+    usePipewaveResetConnection,
+} from '@pipewave/reactpkg'
 import { encode, decode } from '@msgpack/msgpack'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 function ChatRoom() {
     const [messages, setMessages] = useState<string[]>([])
 
-    const onMessage: OnMessage = useMemo(() => ({
-        CHAT_INCOMING_MSG: async (data: Uint8Array, id: string) => {
-            const payload = decode(data) as { from_user_id: string; content: string }
-            setMessages(prev => [...prev, `${payload.from_user_id}: ${payload.content}`])
-        },
-    }), [])
+    usePipewaveMessage('CHAT_INCOMING_MSG', async (data: Uint8Array) => {
+        const payload = decode(data) as { from_user_id: string; content: string }
+        setMessages(prev => [...prev, `${payload.from_user_id}: ${payload.content}`])
+    })
 
-    const { status, send, resetRetryCount } = usePipewave(onMessage)
+    const { send } = usePipewaveSend()
+    const { status, isSuspended } = usePipewaveStatus()
+    const { resetRetryCount } = usePipewaveResetConnection()
 
     const sendMessage = (content: string, toUserId: string) => {
         send({
@@ -72,16 +80,18 @@ function ChatRoom() {
     return (
         <div>
             <p>Status: <span style={{ color: status === 'READY' ? 'green' : 'red' }}>{status}</span></p>
-            {status === 'SUSPEND' && <button onClick={resetRetryCount}>Retry</button>}
+            {isSuspended && <button onClick={resetRetryCount}>Retry</button>}
             {messages.map((msg, i) => <p key={i}>{msg}</p>)}
         </div>
     )
 }
 ```
 
+> **Tip:** `usePipewaveMessage` stores the handler with `useEffectEvent` internally — no need to wrap it in `useMemo` or `useCallback`.
+
 ## What's Next
 
 - Learn about [PipewaveProvider](/docs/frontend/pipewave-provider) configuration options
-- Deep dive into the [usePipewave Hook](/docs/frontend/use-pipewave-hook)
+- Deep dive into the [usePipewave Hook](/docs/frontend/hooks/use-pipewave)
 - Understand the [Binary Protocol](/docs/frontend/binary-protocol) for efficient data transfer
 - Browse working examples at [github.com/pipewave-dev/example](https://github.com/pipewave-dev/example)

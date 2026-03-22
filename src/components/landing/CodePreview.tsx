@@ -2,6 +2,34 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeBlock from '../docs/CodeBlock'
 
+const databaseCode = `services:
+  valkey:
+    build:
+      context: ./.docker/valkey
+      dockerfile: Dockerfile
+    ports:
+      - 29103:6379
+    command: valkey-server /usr/local/etc/valkey/valkey.conf
+    networks:
+      - pw-echo
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "29104:5432"
+    volumes:
+      - ./tmp/postgres-data:/var/lib/postgresql/data
+    networks:
+      - pw-echo
+
+networks:
+  pw-echo:
+    driver: bridge`
+
 const backendCode = `package main
 
 import (
@@ -21,22 +49,19 @@ import (
 )
 
 func main() {
-	cfg := configprovider.FromYaml([]string{".config.yaml"})
 	pw := pipewave.NewPipewave(pipewave.PipewaveConfig{
-		ConfigStore:       cfg,
+		ConfigStore:       getConfig(),
 		RepositoryFactory: ddbRepo.NewPostgresRepo,
 		QueueFactory:      queueprovider.QueueValkey,
 	})
-	pw.SetFns(&configprovider.Fns{
-		InspectToken: func(ctx context.Context, token string) (userId string, isAnonymous bool, err error) {
-			user, err := auth.ValidateToken(ctx, token) // Provide your auth function
-			return user.ID, false, err
-		},
+	pw.SetFns(&pipewave.FunctionStore{
+		InspectToken:  inspectToken,
 		HandleMessage: &handleMsg{i: pw},
 	})
+
 	server := &http.Server{
 		Addr:    ":8080",
-		Handler: pw.Mux(),
+		Handler: http.StripPrefix("/pipewave", pw.Mux()),
 	}
 	go func() {
 		fmt.Println("Starting server on :8080")
@@ -52,60 +77,80 @@ func main() {
 	pw.Shutdown()
 }
 
-type handleMsg struct {
-	i *pipewave.Pipewave
-}
+// --- handlemsg.go ---
 
 const (
-	ECHO_RESPONSE = "ECHO_RESPONSE"
+	MsgTypeEchoReq = "ECHO_REQ"
+	MsgTypeEchoRes = "ECHO_RES"
 )
 
-func (h *handleMsg) HandleMessage(ctx context.Context, auth pipewave.Auth, msgType string, data []byte) (string, []byte, error) {
-	fmt.Printf("Got type[%s]: %s\n", msgType, string(data))
-	res := fmt.Sprintf("Echo: %s", string(data))
-	return ECHO_RESPONSE, []byte(res), nil
+type handleMsg struct {
+	i delivery.ModuleDelivery
+}
+
+func (h *handleMsg) HandleMessage(ctx context.Context, auth voAuth.WebsocketAuth, inputType string, data []byte) (string, []byte, error) {
+	switch inputType {
+	case MsgTypeEchoReq:
+		msg := string(data)
+		slog.Info("Received echo request", "message", msg)
+		resMsg := []byte(fmt.Sprintf("Got [%s] at %s", msg, time.Now().Format(time.TimeOnly)))
+		return MsgTypeEchoRes, resMsg, nil
+	default:
+		return "", nil, fmt.Errorf("unsupported message type: %s", inputType)
+	}
 }`
 
-const frontendCode = `import { PipewaveProvider, PipewaveModuleConfig } from '@pipewave/react'
-import { usePipewave } from '@pipewave/react/hooks'
-import { useState } from 'react'
+const frontendCode = `import { PipewaveProvider, PipewaveModuleConfig, PipewaveDebugger } from "@pipewave/reactpkg"
+import { usePipewaveStatus, usePipewaveSend, usePipewaveMessage, usePipewaveResetConnection } from "@pipewave/reactpkg"
+import { useState } from "react"
 
 // 1. Configure the provider
 const config = new PipewaveModuleConfig({
-    backendEndpoint: 'api.example.com/websocket',
-    getAccessToken: async () => localStorage.getItem("token") || "",
+  backendEndpoint: "localhost:8080/pipewave",
+  insecure: true,
+  getAccessToken: async () => "default",
 })
 
-export function App() {
-    return (
-        <PipewaveProvider config={config}>
-            <ChatRoom />
-        </PipewaveProvider>
-    )
+export default function App() {
+  return (
+    <PipewaveProvider config={config}>
+      <EchoApp />
+      <PipewaveDebugger />
+    </PipewaveProvider>
+  )
 }
 
-// 2. Use the hook in any component
-function ChatRoom() {
-    const [messages, setMessages] = useState<string[]>([])
+// 2. Use hooks in any component
+const Encoder = new TextEncoder()
+const Decoder = new TextDecoder()
 
-    const { status, send } = usePipewave({
-        CHAT_MESSAGE: async (data: Uint8Array) => {
-            const msg = new TextDecoder().decode(data)
-            setMessages(prev => [...prev, msg])
-        },
-    })
+export function EchoApp() {
+  const [messages, setMessages] = useState<string[]>([])
+  const { status, isConnected, isSuspended } = usePipewaveStatus()
+  const { send } = usePipewaveSend()
+  const { resetRetryCount } = usePipewaveResetConnection()
 
-    return (
-        <div>
-            <span>Status: {status}</span>
-            {messages.map((m, i) => <p key={i}>{m}</p>)}
-        </div>
-    )
+  usePipewaveMessage("ECHO_RES", async (data: Uint8Array) => {
+    setMessages((prev) => [...prev, Decoder.decode(data)])
+  })
+
+  const handleSend = (text: string) => {
+    send({ id: crypto.randomUUID(), msgType: "ECHO_REQ", data: Encoder.encode(text) })
+  }
+
+  return (
+    <div>
+      <p>Status: <span>{status}</span></p>
+      {isSuspended && <button onClick={resetRetryCount}>Retry</button>}
+      <input onKeyDown={(e) => e.key === "Enter" && handleSend(e.currentTarget.value)} />
+      {messages.map((msg, i) => <p key={i}>{msg}</p>)}
+    </div>
+  )
 }`
 
 const tabs = [
-    { id: 'backend', label: 'Go Backend', language: 'go', code: backendCode },
-    { id: 'frontend', label: 'React Frontend', language: 'tsx', code: frontendCode },
+    { id: 'backend', label: 'Backend', language: 'go', code: backendCode },
+    { id: 'frontend', label: 'Frontend', language: 'tsx', code: frontendCode },
 ]
 
 export default function CodePreview() {
@@ -121,6 +166,17 @@ export default function CodePreview() {
                     </h2>
                     <p className="mt-4 text-lg text-slate-400">
                         Clean, minimal setup on both sides
+                    </p>
+                    <p className="mt-2 text-sm text-slate-500">
+                        Want to try it yourself?{' '}
+                        <a
+                            href="https://github.com/pipewave-dev/example/tree/main/01-echo"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors"
+                        >
+                            View the full example on GitHub
+                        </a>
                     </p>
                 </div>
 

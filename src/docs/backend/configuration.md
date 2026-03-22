@@ -17,7 +17,6 @@ import (
 config := configprovider.FromGoStruct(pipewave.ConfigEnv{
     Env:     "production",
     PodName: "pod-1",
-    Version: "1.0.0",
 
     WorkerPool: configprovider.WorkerPoolT{
         Buffer:         100,   // Worker pool buffer size

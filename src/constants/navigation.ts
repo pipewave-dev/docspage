@@ -58,7 +58,6 @@ export const docsNavigation: NavItem[] = [
         children: [
             { title: 'Quick Start', path: '/docs/frontend/quick-start' },
             { title: 'PipewaveProvider', path: '/docs/frontend/pipewave-provider' },
-            { title: 'usePipewave Hook', path: '/docs/frontend/use-pipewave-hook' },
             {
                 title: 'Hooks Reference',
                 path: '/docs/frontend/hooks',
@@ -72,6 +71,7 @@ export const docsNavigation: NavItem[] = [
                     { title: 'usePipewaveMessageHistory', path: '/docs/frontend/hooks/use-pipewave-message-history' },
                     { title: 'usePipewaveSendWaitAck', path: '/docs/frontend/hooks/use-pipewave-send-wait-ack' },
                     { title: 'usePipewaveConnectionInfo', path: '/docs/frontend/hooks/use-pipewave-connection-info' },
+                    { title: 'usePipewave', path: '/docs/frontend/hooks/use-pipewave' },
                 ],
             },
             { title: 'PipewaveDebugger', path: '/docs/frontend/pipewave-debugger' },
